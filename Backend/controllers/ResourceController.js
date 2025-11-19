@@ -1,4 +1,4 @@
-import { ResourceSchema } from "../models/ResourcesModel.js";
+import { ResourceSchema } from "../models/Resources.js";
 import * as ResourceService from "../services/ResourceService.js";
 
 export const getResources = async (req, res) => {

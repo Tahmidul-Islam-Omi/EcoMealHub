@@ -1,10 +1,20 @@
 // index.js
 import express from "express";
 import ResourceRoute from "./routes/ResouceRoute.js";
+import cors from "cors";
 
 import db from "./config/db.js";
 
 const app = express();
+
+const corsOptions = {
+    origin: '*', // Allow all origins
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 
