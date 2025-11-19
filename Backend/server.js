@@ -9,7 +9,7 @@ app.get("/test", async (req, res) => {
     // basic test query
     const { data, error } = await db
         .from("users")
-        .select("*");
+        .select("id,email");
 
     if (error) return res.status(400).json({ error });
 
