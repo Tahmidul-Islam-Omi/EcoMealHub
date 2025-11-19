@@ -36,7 +36,7 @@ export const SAMPLE_RESOURCES = [
     title: "Composting Basics for Beginners",
     description: "Start your composting journey with this beginner-friendly guide to turning food scraps into nutrient-rich soil.",
     url: "https://example.com/composting",
-    category: "waste reduction",
+    category: "composting",
     type: "video"
   },
   {
@@ -44,8 +44,8 @@ export const SAMPLE_RESOURCES = [
     title: "Seasonal Eating Guide",
     description: "Save money and eat better by choosing seasonal produce. Includes monthly buying guides.",
     url: "https://example.com/seasonal-eating",
-    category: "budget tips",
-    type: "article"
+    category: "sustainable shopping",
+    type: "guide"
   },
   {
     id: 7,
@@ -68,7 +68,7 @@ export const SAMPLE_RESOURCES = [
     title: "Nutrition on a Budget",
     description: "Expert nutritionist explains how to maintain a balanced diet without overspending.",
     url: "https://example.com/nutrition-budget",
-    category: "budget tips",
+    category: "nutrition",
     type: "video"
   },
   {
@@ -81,11 +81,11 @@ export const SAMPLE_RESOURCES = [
   },
   {
     id: 11,
-    title: "Freezing Foods Guide",
-    description: "Complete reference for what you can freeze and how to do it properly to prevent freezer burn.",
-    url: "https://example.com/freezing-guide",
-    category: "storage tips",
-    type: "article"
+    title: "One-Pot Pasta Recipes",
+    description: "Delicious and sustainable one-pot pasta recipes that minimize cleanup and maximize flavor.",
+    url: "https://example.com/one-pot-pasta",
+    category: "cooking tips",
+    type: "recipe"
   },
   {
     id: 12,
@@ -97,27 +97,27 @@ export const SAMPLE_RESOURCES = [
   },
   {
     id: 13,
-    title: "Shopping Smart: Grocery List Strategies",
-    description: "Create effective grocery lists that prevent overbuying and reduce impulse purchases.",
-    url: "https://example.com/shopping-smart",
-    category: "budget tips",
-    type: "article"
+    title: "Sustainable Shopping Guide",
+    description: "Create effective shopping habits that support local farmers and reduce environmental impact.",
+    url: "https://example.com/sustainable-shopping",
+    category: "sustainable shopping",
+    type: "guide"
   },
   {
     id: 14,
-    title: "Vegetable Storage Mastery",
-    description: "Keep your vegetables fresh longer with these proven storage methods for different produce types.",
-    url: "https://example.com/vegetable-storage",
-    category: "storage tips",
-    type: "article"
+    title: "Vegetable Garden Starter Kit",
+    description: "Start growing your own vegetables with this beginner-friendly gardening guide and tool recommendations.",
+    url: "https://example.com/garden-starter",
+    category: "sustainable shopping",
+    type: "tool"
   },
   {
     id: 15,
     title: "Leftover Transformation Recipes",
     description: "Creative recipes that turn yesterday's dinner into today's delicious new meal.",
     url: "https://example.com/leftover-recipes",
-    category: "meal planning",
-    type: "article"
+    category: "cooking tips",
+    type: "recipe"
   },
   {
     id: 16,
@@ -129,19 +129,19 @@ export const SAMPLE_RESOURCES = [
   },
   {
     id: 17,
-    title: "Pantry Organization Guide",
+    title: "Pantry Organization System",
     description: "Optimize your pantry space and visibility to prevent food from being forgotten and wasted.",
     url: "https://example.com/pantry-organization",
     category: "storage tips",
-    type: "article"
+    type: "tool"
   },
   {
     id: 18,
-    title: "Budget-Friendly Protein Sources",
-    description: "Discover affordable protein options that don't compromise on nutrition or taste.",
-    url: "https://example.com/protein-sources",
-    category: "budget tips",
-    type: "article"
+    title: "Plant-Based Protein Sources",
+    description: "Discover affordable and sustainable plant-based protein options for every diet.",
+    url: "https://example.com/plant-proteins",
+    category: "nutrition",
+    type: "guide"
   },
   {
     id: 19,
@@ -157,6 +157,69 @@ export const SAMPLE_RESOURCES = [
     description: "Downloadable template and guide for planning an entire month of meals efficiently.",
     url: "https://example.com/monthly-planning",
     category: "meal planning",
-    type: "article"
+    type: "tool"
+  },
+  {
+    id: 21,
+    title: "Home Composting System Setup",
+    description: "Complete guide to setting up and maintaining a home composting system for food scraps.",
+    url: "https://example.com/composting-setup",
+    category: "composting",
+    type: "guide"
+  },
+  {
+    id: 22,
+    title: "Quick 15-Minute Healthy Meals",
+    description: "Fast, nutritious meal ideas for busy weeknights that don't compromise on sustainability.",
+    url: "https://example.com/quick-meals",
+    category: "cooking tips",
+    type: "recipe"
+  },
+  {
+    id: 23,
+    title: "Local Farmers Market Finder",
+    description: "Interactive tool to find farmers markets and local food sources in your area.",
+    url: "https://example.com/market-finder",
+    category: "sustainable shopping",
+    type: "tool"
+  },
+  {
+    id: 24,
+    title: "Sustainable Seafood Guide",
+    description: "Learn which seafood choices are environmentally responsible and how to identify them.",
+    url: "https://example.com/sustainable-seafood",
+    category: "sustainable shopping",
+    type: "guide"
   }
 ];
+
+// API service functions (commented out for demo - uncomment when backend is ready)
+/*
+export const fetchResources = async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/v1/resources');
+    if (!response.ok) throw new Error('Failed to fetch resources');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching resources:', error);
+    return SAMPLE_RESOURCES; // Fallback to dummy data
+  }
+};
+
+export const createResource = async (resourceData) => {
+  try {
+    const response = await fetch('http://localhost:3000/api/v1/resources', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(resourceData)
+    });
+    if (!response.ok) throw new Error('Failed to create resource');
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating resource:', error);
+    throw error;
+  }
+};
+*/
