@@ -1,10 +1,10 @@
-import sql from '../config/db.js';
+import db from '../config/db.js';
 
 class User {
     static async create(userData) {
         const { full_name, email, password_hash, user_type, household_size, location } = userData;
         
-        const [user] = await sql`
+        const [user] = await db`
             INSERT INTO users (
                 full_name, 
                 email, 
@@ -36,7 +36,7 @@ class User {
     }
 
     static async findByEmail(email) {
-        const [user] = await sql`
+        const [user] = await db`
             SELECT 
                 id, 
                 full_name, 
@@ -55,7 +55,7 @@ class User {
     }
 
     static async findById(id) {
-        const [user] = await sql`
+        const [user] = await db`
             SELECT 
                 id, 
                 full_name, 
@@ -74,25 +74,13 @@ class User {
     }
 
     static async updateById(id, updateData) {
-        const fields = [];
-        const values = [];
-        
-        Object.entries(updateData).forEach(([key, value]) => {
-            if (value !== undefined) {
-                fields.push(key);
-                values.push(value);
-            }
-        });
-        
-        if (fields.length === 0) {
+        if (Object.keys(updateData).length === 0) {
             throw new Error('No fields to update');
         }
         
-        const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
-        
-        const [user] = await sql`
+        const [user] = await db`
             UPDATE users
-            SET ${sql(updateData)}, updated_at = NOW()
+            SET ${db(updateData)}, updated_at = NOW()
             WHERE id = ${id}
             RETURNING 
                 id, 
@@ -109,7 +97,7 @@ class User {
     }
 
     static async deleteById(id) {
-        const [user] = await sql`
+        const [user] = await db`
             DELETE FROM users
             WHERE id = ${id}
             RETURNING id

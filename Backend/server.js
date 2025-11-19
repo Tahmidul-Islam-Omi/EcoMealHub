@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { testConnection } from "./config/db.js";
 import apiRoutes from "./routes/index.js";
+import { ErrorHandler } from "./middlewares/index.js";
 
 const app = express();
 
@@ -21,21 +22,10 @@ app.get('/health', (req, res) => {
 });
 
 // 404 handler
-app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        message: 'Route not found'
-    });
-});
+app.use(ErrorHandler.notFound);
 
 // Error handler
-app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    res.status(err.status || 500).json({
-        success: false,
-        message: err.message || 'Internal server error'
-    });
-});
+app.use(ErrorHandler.handle);
 
 // Start server only after database connection is verified
 const startServer = async () => {

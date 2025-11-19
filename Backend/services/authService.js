@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import User from '../models/User.js';
+import { JwtUtils } from '../utills/index.js';
 
 class AuthService {
     static async registerUser(userData) {
@@ -27,7 +28,18 @@ class AuthService {
 
         // Remove password from response
         const { password_hash: _, ...userWithoutPassword } = newUser;
-        return userWithoutPassword;
+
+        // Generate JWT token
+        const token = JwtUtils.generateToken({
+            id: newUser.id,
+            email: newUser.email,
+            user_type: newUser.user_type
+        });
+
+        return {
+            user: userWithoutPassword,
+            token
+        };
     }
 }
 
