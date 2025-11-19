@@ -3,9 +3,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const supabaseEnv ={
-    SupabaseUrl : process.env.SUPABASE_URL,
-    SupabaseAnonKey: process.env.SUPABASE_ANON_KEY,
-    SupabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    password: process.env.password,
+    host : process.env.host,
+    port : process.env.port,
+    database : process.env.database,
+    user : process.env.user,
+    pool_mode : process.env.pool_mode
 }
 
 

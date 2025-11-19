@@ -11,13 +11,8 @@ app.use(express.json());
 
 app.get("/test", async (req, res) => {
     // basic test query
-    const { data, error } = await db
-        .from("users")
-        .select("id,email");
-
-    if (error) return res.status(400).json({ error });
-
-    res.json(data);
+    const { rows } = await db.query('SELECT * FROM USERS;');
+    res.json(rows);
 });
 
 
@@ -26,6 +21,6 @@ app.get("/success", async (req, res) => {
 });
 
 
-app.use("/resources", ResourceRoute);
+app.use("/api/v1/resources", ResourceRoute);
 
 app.listen(3000, () => console.log("Server running on port 3000"));
