@@ -26,6 +26,28 @@ class AuthController {
             next(error);
         }
     }
+
+    static async login(req, res, next) {
+        try {
+            const { email, password } = req.body;
+
+            const { user, token } = await AuthService.loginUser({
+                email,
+                password
+            });
+
+            res.status(200).json({
+                success: true,
+                message: 'Login successful',
+                data: {
+                    user,
+                    token
+                }
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default AuthController;

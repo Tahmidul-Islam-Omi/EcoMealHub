@@ -41,6 +41,37 @@ class AuthService {
             token
         };
     }
+
+    static async loginUser(credentials) {
+        const { email, password } = credentials;
+
+        // Find user by email
+        const user = await User.findByEmail(email);
+        if (!user) {
+            throw new Error('Invalid email or password');
+        }
+
+        // Verify password
+        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+        if (!isPasswordValid) {
+            throw new Error('Invalid email or password');
+        }
+
+        // Remove password from response
+        const { password_hash: _, ...userWithoutPassword } = user;
+
+        // Generate JWT token
+        const token = JwtUtils.generateToken({
+            id: user.id,
+            email: user.email,
+            user_type: user.user_type
+        });
+
+        return {
+            user: userWithoutPassword,
+            token
+        };
+    }
 }
 
 export default AuthService;

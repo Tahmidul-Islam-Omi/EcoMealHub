@@ -54,6 +54,13 @@ class ErrorHandler {
             });
         }
 
+        if (err.message === 'Invalid email or password') {
+            return res.status(401).json({
+                success: false,
+                message: err.message
+            });
+        }
+
         // Default error
         res.status(err.status || 500).json({
             success: false,
