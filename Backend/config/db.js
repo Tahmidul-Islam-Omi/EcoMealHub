@@ -1,24 +1,23 @@
-// supabase.js
-import { createClient } from '@supabase/supabase-js';
+// db.js
 import dotenv from 'dotenv';
+import postgres from 'postgres';
 
 dotenv.config();
 
-const db = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// Create PostgreSQL connection
+const db = postgres({
+    host: process.env.host,
+    port: process.env.port,
+    database: process.env.database,
+    user: process.env.user,
+    password: process.env.password,
+    ssl: 'require'
+});
 
 // Function to test database connection
 export const testConnection = async () => {
     try {
-        const { data, error } = await db
-            .from('users')
-            .select('count')
-            .limit(1);
-        
-        if (error) throw error;
-        
+        await db`SELECT NOW()`;
         console.log('✅ Database connected successfully');
         return true;
     } catch (error) {

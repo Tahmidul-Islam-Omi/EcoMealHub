@@ -1,0 +1,34 @@
+import bcrypt from 'bcrypt';
+import User from '../models/User.js';
+
+class AuthService {
+    static async registerUser(userData) {
+        const { full_name, email, password, user_type, household_size, location } = userData;
+
+        // Check if user already exists
+        const existingUser = await User.findByEmail(email);
+        if (existingUser) {
+            throw new Error('User with this email already exists');
+        }
+
+        // Hash password
+        const saltRounds = 10;
+        const password_hash = await bcrypt.hash(password, saltRounds);
+
+        // Create user
+        const newUser = await User.create({
+            full_name,
+            email,
+            password_hash,
+            user_type,
+            household_size: household_size || null,
+            location: location || null
+        });
+
+        // Remove password from response
+        const { password_hash: _, ...userWithoutPassword } = newUser;
+        return userWithoutPassword;
+    }
+}
+
+export default AuthService;

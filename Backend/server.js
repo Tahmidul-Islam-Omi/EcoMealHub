@@ -1,19 +1,40 @@
-// index.js
 import express from "express";
-import db, { testConnection } from "./config/db.js";
+import cors from "cors";
+import helmet from "helmet";
+import { testConnection } from "./config/db.js";
+import apiRoutes from "./routes/index.js";
 
 const app = express();
+
+// Middleware
+app.use(helmet());
+app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.get("/test", async (req, res) => {
-    // basic test query
-    const { data, error } = await db
-        .from("users")
-        .select("*");
+// API Routes
+app.use('/api/v1', apiRoutes);
 
-    if (error) return res.status(400).json({ error });
+// Health check
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', message: 'Server is running' });
+});
 
-    res.json(data);
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: 'Route not found'
+    });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+    console.error('Error:', err);
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || 'Internal server error'
+    });
 });
 
 // Start server only after database connection is verified
@@ -25,7 +46,11 @@ const startServer = async () => {
         process.exit(1);
     }
     
-    app.listen(3000, () => console.log("Server running on port 3000"));
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`✅ Server running on port ${PORT}`);
+        console.log(`📍 API endpoint: http://localhost:${PORT}/api/v1`);
+    });
 };
 
 startServer();
