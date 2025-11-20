@@ -1,16 +1,16 @@
 // db.js
-import dotenv from 'dotenv';
 import postgres from 'postgres';
 
-dotenv.config();
+import supabaseEnv from './env.js';
 
 // Create PostgreSQL connection
 const db = postgres({
-    host: process.env.host,
-    port: process.env.port,
-    database: process.env.database,
-    user: process.env.user,
-    password: process.env.password,
+    host: supabaseEnv.host,
+    port: supabaseEnv.port,
+    database: supabaseEnv.database,
+    user: supabaseEnv.user,
+    password: supabaseEnv.password,
+    poolMode: supabaseEnv.pool_mode,
     ssl: 'require'
 });
 

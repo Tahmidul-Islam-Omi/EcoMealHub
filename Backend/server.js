@@ -5,13 +5,15 @@ import { testConnection } from "./config/db.js";
 import apiRoutes from "./routes/index.js";
 import { ErrorHandler } from "./middlewares/index.js";
 
-const app = express();
 
+const app = express();
 // Middleware
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
 
 // API Routes
 app.use('/api/v1', apiRoutes);
@@ -44,3 +46,7 @@ const startServer = async () => {
 };
 
 startServer();
+
+
+
+

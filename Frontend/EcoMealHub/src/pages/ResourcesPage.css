@@ -1,0 +1,235 @@
+.resources-page {
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f1419 0%, #1a202c 50%, #0f1419 100%);
+}
+
+.resources-header {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-bottom: 1px solid #2d3748;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: 48px 0;
+}
+
+.resources-header-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
+  text-align: center;
+}
+
+.resources-title {
+  font-size: 42px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #e2e8f0 0%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.resources-subtitle {
+  font-size: 16px;
+  color: #cbd5e0;
+  max-width: 600px;
+  margin: 0 auto;
+  font-weight: 300;
+}
+
+.resources-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 16px;
+}
+
+.search-section {
+  margin-bottom: 32px;
+}
+
+.search-box {
+  position: relative;
+  max-width: 560px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  border: 1px solid #2d3748;
+  border-radius: 12px;
+  background: rgba(26, 32, 44, 0.6);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+}
+
+.search-box input::placeholder {
+  color: #718096;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15), 0 4px 12px rgba(102, 126, 234, 0.2);
+  background: rgba(26, 32, 44, 0.8);
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #718096;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.filters-section {
+  background: rgba(26, 32, 44, 0.6);
+  border: 1px solid #2d3748;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  margin-bottom: 32px;
+}
+
+.filters-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.filters-header-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-icon {
+  width: 18px;
+  height: 18px;
+  color: #a5b4fc;
+}
+
+.filter-group {
+  margin-bottom: 20px;
+}
+
+.filter-group:last-of-type {
+  margin-bottom: 0;
+}
+
+.filter-group-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #a0aec0;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.filter-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.clear-all-btn {
+  background: none;
+  border: none;
+  color: #a5b4fc;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.clear-all-btn:hover {
+  color: #c7d2fe;
+  text-decoration: underline;
+}
+
+.results-info {
+  font-size: 13px;
+  color: #cbd5e0;
+  margin-bottom: 24px;
+}
+
+.results-info strong {
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .resources-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .resources-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 16px;
+  border: 1px dashed #2d3748;
+  border-radius: 12px;
+  background: rgba(26, 32, 44, 0.4);
+}
+
+.empty-icon {
+  width: 72px;
+  height: 72px;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: #667eea;
+}
+
+.empty-title {
+  font-size: 19px;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 8px;
+}
+
+.empty-message {
+  font-size: 14px;
+  color: #cbd5e0;
+  margin-bottom: 20px;
+}
+
+.empty-action {
+  background: none;
+  border: none;
+  color: #a5b4fc;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.empty-action:hover {
+  color: #c7d2fe;
+  text-decoration: underline;
+}
