@@ -10,3 +10,4 @@ export { default as MealPlanning } from './MealPlanning';
 export { default as ForgotPasswordPage } from './ForgotPasswordPage';
 export { default as VerifyCodePage } from './VerifyCodePage';
 export { default as ResetPasswordPage } from './ResetPasswordPage';
+export { default as GoogleAuthSuccess } from './GoogleAuthSuccess';

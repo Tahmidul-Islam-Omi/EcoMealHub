@@ -12,6 +12,7 @@ import MealPlanning from './pages/MealPlanning';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import VerifyCodePage from './pages/VerifyCodePage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import GoogleAuthSuccess from './pages/GoogleAuthSuccess';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/verify-code" element={<VerifyCodePage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
         </Routes>
       </div>
     </Router>

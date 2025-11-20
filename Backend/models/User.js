@@ -2,7 +2,16 @@ import db from '../config/db.js';
 
 class User {
     static async create(userData) {
-        const { full_name, email, password_hash, user_type, household_size, location } = userData;
+        const { 
+            full_name, 
+            email, 
+            password_hash, 
+            user_type, 
+            household_size, 
+            location,
+            google_id = null,
+            auth_provider = 'local'
+        } = userData;
         
         const [user] = await db`
             INSERT INTO users (
@@ -11,7 +20,9 @@ class User {
                 password_hash, 
                 user_type, 
                 household_size, 
-                location
+                location,
+                google_id,
+                auth_provider
             )
             VALUES (
                 ${full_name}, 
@@ -19,7 +30,9 @@ class User {
                 ${password_hash}, 
                 ${user_type}::user_type_enum, 
                 ${household_size}, 
-                ${location}
+                ${location},
+                ${google_id},
+                ${auth_provider}
             )
             RETURNING 
                 id, 
@@ -27,7 +40,9 @@ class User {
                 email, 
                 user_type, 
                 household_size, 
-                location, 
+                location,
+                google_id,
+                auth_provider,
                 created_at, 
                 updated_at
         `;
@@ -44,7 +59,9 @@ class User {
                 password_hash, 
                 user_type, 
                 household_size, 
-                location, 
+                location,
+                google_id,
+                auth_provider,
                 created_at, 
                 updated_at
             FROM users
@@ -63,7 +80,9 @@ class User {
                 password_hash, 
                 user_type, 
                 household_size, 
-                location, 
+                location,
+                google_id,
+                auth_provider,
                 created_at, 
                 updated_at
             FROM users
@@ -88,7 +107,9 @@ class User {
                 email, 
                 user_type, 
                 household_size, 
-                location, 
+                location,
+                google_id,
+                auth_provider,
                 created_at, 
                 updated_at
         `;
