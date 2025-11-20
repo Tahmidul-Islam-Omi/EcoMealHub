@@ -6,6 +6,7 @@ import apiRoutes from "./routes/index.js";
 import { ErrorHandler } from "./middlewares/index.js";
 
 
+
 const app = express();
 // Middleware
 app.use(helmet());
@@ -38,7 +39,8 @@ const startServer = async () => {
         process.exit(1);
     }
     
-    const PORT = process.env.PORT || 3000;
+    const PORT = process.env.SERVER_PORT || 3000;
+    console.log(PORT);
     app.listen(PORT, () => {
         console.log(`✅ Server running on port ${PORT}`);
         console.log(`📍 API endpoint: http://localhost:${PORT}/api/v1`);

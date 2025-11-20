@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Shield, ArrowLeft, Leaf, AlertCircle } from 'lucide-react';
+import { API_BASE_URL } from '../services/api';
 
 const VerifyCodePage = () => {
   const [code, setCode] = useState('');
@@ -35,7 +36,7 @@ const VerifyCodePage = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5432/api/v1/auth/verify-code', {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code })
@@ -64,7 +65,7 @@ const VerifyCodePage = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5432/api/v1/auth/forgot-password', {
+      const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })

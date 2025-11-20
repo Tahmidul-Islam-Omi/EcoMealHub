@@ -62,4 +62,5 @@ const ResourceAPI = {
 };
 
 
+
 export { InventoryAPI, ResourceAPI, API_BASE_URL };

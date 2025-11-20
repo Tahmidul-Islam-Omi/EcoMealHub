@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { UserPlus, Mail, Lock, Eye, EyeOff, User, Leaf, AlertCircle, MapPin, Users } from 'lucide-react';
+import { API_BASE_URL } from '../services/api';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
@@ -367,7 +368,7 @@ const SignUpPage = () => {
           {/* Google Sign Up Button */}
           <button
             type="button"
-            onClick={() => window.location.href = 'http://localhost:5432/api/v1/auth/google'}
+            onClick={() => window.location.href = `${API_BASE_URL}/auth/google`}
             className="w-full inline-flex items-center justify-center gap-3 bg-white text-slate-700 py-3 rounded-lg font-semibold hover:bg-slate-100 transition-all shadow-lg border border-slate-300"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
