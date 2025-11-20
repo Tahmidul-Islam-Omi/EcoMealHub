@@ -1,0 +1,415 @@
+import { useState } from 'react';
+import { 
+  Calendar, 
+  Plus, 
+  ShoppingCart, 
+  Target,
+  ChevronLeft,
+  ChevronRight,
+  Utensils,
+  Clock,
+  Check,
+  X
+} from 'lucide-react';
+import { SAMPLE_MEAL_PLANS, MEAL_TYPES, QUICK_ADD_MEALS, SHOPPING_LIST } from '../utills/mealPlanData';
+
+const MealPlanning = () => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [mealPlan, setMealPlan] = useState(SAMPLE_MEAL_PLANS);
+  const [showAddMealModal, setShowAddMealModal] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState({ date: null, mealType: null });
+  const [shoppingList, setShoppingList] = useState(SHOPPING_LIST);
+
+  // Get week dates
+  const getWeekDates = (date) => {
+    const week = [];
+    const startDate = new Date(date);
+    const day = startDate.getDay();
+    const diff = startDate.getDate() - day;
+    startDate.setDate(diff);
+
+    for (let i = 0; i < 7; i++) {
+      const weekDate = new Date(startDate);
+      weekDate.setDate(startDate.getDate() + i);
+      week.push(weekDate);
+    }
+    return week;
+  };
+
+  const weekDates = getWeekDates(currentDate);
+  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Navigate weeks
+  const goToPreviousWeek = () => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(currentDate.getDate() - 7);
+    setCurrentDate(newDate);
+  };
+
+  const goToNextWeek = () => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(currentDate.getDate() + 7);
+    setCurrentDate(newDate);
+  };
+
+  // Format date for meal plan keys
+  const formatDateKey = (date) => {
+    return date.toISOString().split('T')[0];
+  };
+
+  // Add meal to plan
+  const addMealToPlan = (date, mealType, meal) => {
+    // TODO: Replace with API call
+    // await addMealToPlan(date, mealType, meal.id);
+    
+    const dateKey = formatDateKey(date);
+    setMealPlan(prev => ({
+      ...prev,
+      [dateKey]: {
+        ...prev[dateKey],
+        [mealType]: meal
+      }
+    }));
+    setShowAddMealModal(false);
+  };
+
+  // Remove meal from plan
+  const removeMealFromPlan = (date, mealType) => {
+    // TODO: Replace with API call
+    // await removeMealFromPlan(formatDateKey(date), mealType);
+    
+    const dateKey = formatDateKey(date);
+    setMealPlan(prev => ({
+      ...prev,
+      [dateKey]: {
+        ...prev[dateKey],
+        [mealType]: null
+      }
+    }));
+  };
+
+  // Calculate weekly nutrition
+  const calculateWeeklyNutrition = () => {
+    let totalCalories = 0;
+    let mealCount = 0;
+
+    weekDates.forEach(date => {
+      const dateKey = formatDateKey(date);
+      const dayMeals = mealPlan[dateKey];
+      
+      if (dayMeals) {
+        MEAL_TYPES.forEach(mealType => {
+          if (dayMeals[mealType]) {
+            totalCalories += dayMeals[mealType].calories || 0;
+            mealCount++;
+          }
+        });
+      }
+    });
+
+    return {
+      calories: totalCalories,
+      averagePerMeal: mealCount > 0 ? Math.round(totalCalories / mealCount) : 0,
+      mealsPlanned: mealCount,
+      totalSlots: weekDates.length * MEAL_TYPES.length
+    };
+  };
+
+  const weeklyNutrition = calculateWeeklyNutrition();
+
+  // Toggle shopping list item
+  const toggleShoppingItem = (id) => {
+    // TODO: Replace with API call
+    // await updateShoppingListItem(id, { checked: !item.checked });
+    
+    setShoppingList(prev => 
+      prev.map(item => 
+        item.id === id ? { ...item, checked: !item.checked } : item
+      )
+    );
+  };
+
+  const openAddMealModal = (date, mealType) => {
+    setSelectedSlot({ date, mealType });
+    setShowAddMealModal(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-b border-slate-700">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <Calendar className="w-10 h-10 text-purple-400" />
+                <h1 className="text-4xl font-bold text-slate-200">Meal Planning</h1>
+              </div>
+              <p className="text-slate-400 max-w-2xl">
+                Plan your meals, track nutrition, and generate shopping lists for sustainable eating
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <button className="inline-flex items-center gap-2 bg-purple-500/20 text-purple-300 px-4 py-2 rounded-lg border border-purple-500/30 hover:bg-purple-500/30 transition-colors">
+                <ShoppingCart className="w-4 h-4" />
+                Shopping List
+              </button>
+              <button className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg">
+                <Plus className="w-5 h-5" />
+                Quick Add
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Main Meal Plan */}
+          <div className="lg:col-span-3">
+            {/* Week Navigation */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={goToPreviousWeek}
+                  className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-lg transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <h2 className="text-xl font-semibold text-slate-200">
+                  Week of {weekDates[0].toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} - {weekDates[6].toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                </h2>
+                <button
+                  onClick={goToNextWeek}
+                  className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-lg transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+              <button
+                onClick={() => setCurrentDate(new Date())}
+                className="px-4 py-2 text-purple-400 hover:text-purple-300 border border-purple-500/30 rounded-lg hover:bg-purple-500/10 transition-colors"
+              >
+                Today
+              </button>
+            </div>
+
+            {/* Meal Plan Grid */}
+            <div className="bg-slate-800/60 border border-slate-700 rounded-xl overflow-hidden">
+              {/* Header Row */}
+              <div className="grid grid-cols-8 border-b border-slate-700">
+                <div className="p-4 text-slate-400 font-medium">Meal</div>
+                {weekDates.map((date, index) => (
+                  <div key={index} className="p-4 text-center border-l border-slate-700">
+                    <div className="text-slate-400 text-sm">{weekdays[date.getDay()]}</div>
+                    <div className="text-slate-200 font-semibold">{date.getDate()}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Meal Rows */}
+              {MEAL_TYPES.map(mealType => (
+                <div key={mealType} className="grid grid-cols-8 border-b border-slate-700 last:border-b-0">
+                  <div className="p-4 border-r border-slate-700 bg-slate-700/30">
+                    <div className="flex items-center gap-2">
+                      <Utensils className="w-4 h-4 text-purple-400" />
+                      <span className="text-slate-200 font-medium capitalize">{mealType}</span>
+                    </div>
+                  </div>
+                  {weekDates.map((date, dateIndex) => {
+                    const dateKey = formatDateKey(date);
+                    const meal = mealPlan[dateKey]?.[mealType];
+                    
+                    return (
+                      <div key={dateIndex} className="p-2 border-l border-slate-700 min-h-[100px] relative group">
+                        {meal ? (
+                          <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 h-full relative">
+                            <button
+                              onClick={() => removeMealFromPlan(date, mealType)}
+                              className="absolute top-1 right-1 w-6 h-6 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/30"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                            <h4 className="text-slate-200 font-medium text-sm mb-1 pr-6">{meal.title}</h4>
+                            <div className="flex items-center gap-2 text-xs text-slate-400">
+                              <span>{meal.calories} cal</span>
+                              {meal.prepTime && (
+                                <>
+                                  <span>•</span>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    <span>{meal.prepTime}m</span>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => openAddMealModal(date, mealType)}
+                            className="w-full h-full flex items-center justify-center border-2 border-dashed border-slate-600 rounded-lg hover:border-purple-500/50 hover:bg-purple-500/5 transition-colors group-hover:border-purple-500/30"
+                          >
+                            <Plus className="w-6 h-6 text-slate-500 group-hover:text-purple-400 transition-colors" />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Weekly Stats */}
+            <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-slate-200 mb-4 flex items-center gap-2">
+                <Target className="w-5 h-5 text-purple-400" />
+                Weekly Overview
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Total Calories</span>
+                  <span className="text-slate-200 font-semibold">{weeklyNutrition.calories.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Avg per Meal</span>
+                  <span className="text-slate-200 font-semibold">{weeklyNutrition.averagePerMeal} cal</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Meals Planned</span>
+                  <span className="text-slate-200 font-semibold">
+                    {weeklyNutrition.mealsPlanned}/{weeklyNutrition.totalSlots}
+                  </span>
+                </div>
+                
+                {/* Progress Bar */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-400">Planning Progress</span>
+                    <span className="text-slate-300">
+                      {Math.round((weeklyNutrition.mealsPlanned / weeklyNutrition.totalSlots) * 100)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-700 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all"
+                      style={{ width: `${(weeklyNutrition.mealsPlanned / weeklyNutrition.totalSlots) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Shopping List Preview */}
+            <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-slate-200 flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5 text-purple-400" />
+                  Shopping List
+                </h3>
+                <button className="text-purple-400 hover:text-purple-300 text-sm transition-colors">
+                  View All
+                </button>
+              </div>
+              
+              <div className="space-y-2">
+                {shoppingList.slice(0, 5).map(item => (
+                  <div key={item.id} className="flex items-center gap-3 p-2 hover:bg-slate-700/30 rounded-lg transition-colors">
+                    <button
+                      onClick={() => toggleShoppingItem(item.id)}
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                        item.checked
+                          ? 'bg-green-500 border-green-500 text-white'
+                          : 'border-slate-500 hover:border-slate-400'
+                      }`}
+                    >
+                      {item.checked && <Check className="w-3 h-3" />}
+                    </button>
+                    <div className="flex-1">
+                      <div className={`text-sm ${item.checked ? 'text-slate-500 line-through' : 'text-slate-200'}`}>
+                        {item.name}
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        {item.quantity} {item.unit} • ${item.estimatedPrice}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-slate-700">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-400">Estimated Total</span>
+                  <span className="text-slate-200 font-semibold">
+                    ${shoppingList.reduce((sum, item) => sum + item.estimatedPrice, 0).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Add Meal Modal */}
+      {showAddMealModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-slate-200">
+                Add {selectedSlot.mealType} for {selectedSlot.date?.toLocaleDateString()}
+              </h2>
+              <button
+                onClick={() => setShowAddMealModal(false)}
+                className="text-slate-400 hover:text-slate-200 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-slate-300 mb-3">Quick Add Options</h3>
+              {QUICK_ADD_MEALS
+                .filter(meal => meal.type === selectedSlot.mealType)
+                .map(meal => (
+                  <button
+                    key={meal.id}
+                    onClick={() => addMealToPlan(selectedSlot.date, selectedSlot.mealType, meal)}
+                    className="w-full text-left p-4 bg-slate-700/60 hover:bg-slate-700 border border-slate-600 rounded-lg transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-slate-200">{meal.title}</h4>
+                      <span className="text-slate-400 text-sm">{meal.calories} cal</span>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-slate-400">
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {meal.prepTime}m
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {meal.tags.slice(0, 2).map(tag => (
+                          <span key={tag} className="px-2 py-1 bg-slate-600/60 rounded text-xs">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+            </div>
+            
+            <div className="mt-6 pt-4 border-t border-slate-700">
+              <button className="w-full p-3 text-purple-400 border border-purple-500/30 rounded-lg hover:bg-purple-500/10 transition-colors">
+                Browse All Recipes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MealPlanning;
