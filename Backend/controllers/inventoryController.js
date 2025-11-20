@@ -45,12 +45,13 @@ export const deleteInventoryItem = async (req, res) => {
 export const createUserInventoryItem = async (req, res) => {
     try {
         const userId = 1; //! need to change from auth middleware later
-        var { item_id, quantity, unit, custom_cost } = req.body;
+        const { item_id, quantity, unit, custom_cost } = req.body;
+        var cost = custom_cost;
         if (!custom_cost) {
-            custom_cost = null;
+            cost = null;
         }
         
-        const newItem = await inventoryService.createUserInventoryItem(userId, item_id, quantity, unit, custom_cost);
+        const newItem = await inventoryService.createUserInventoryItem(userId, item_id, quantity, unit, cost);
         res.status(201).json(newItem);
     } catch (error) {
         res.status(500).json({ error: error.message });

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navigation from './components/Navigation';
 import Dashboard from './pages/Dashboard';
@@ -49,15 +49,18 @@ const AppContent = () => {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/receipt-upload" element={<ReceiptUpload />} />
             <Route path="/add-resource" element={<AddResourcePage />} />
-            <Route path="*" element={<HomePage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </>
         ) : (
-          // Unauthenticated routes
+          // Unauthenticated routes - redirect to login
           <>
-            <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
-            <Route path="*" element={<HomePage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/verify-code" element={<VerifyCodePage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </>
         )}
       </Routes>
@@ -68,24 +71,6 @@ const AppContent = () => {
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-slate-900">
-        <Navigation />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/resources" element={<ResourcesPage />} />
-          <Route path="/add-resource" element={<AddResourcePage />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/recipes" element={<Recipes />} />
-          <Route path="/meal-planning" element={<MealPlanning />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/verify-code" element={<VerifyCodePage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
-        </Routes>
-      </div>
       <AuthProvider>
         <AppContent />
       </AuthProvider>
@@ -94,4 +79,3 @@ function App() {
 }
 
 export default App;
-
