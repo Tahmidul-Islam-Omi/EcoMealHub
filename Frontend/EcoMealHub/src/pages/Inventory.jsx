@@ -11,7 +11,10 @@ import {
   Trash2,
   ShoppingCart,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  Camera,
+  Upload,
+  X
 } from 'lucide-react';
 import { SAMPLE_INVENTORY_ITEMS, INVENTORY_CATEGORIES, STORAGE_LOCATIONS, UNITS } from '../utills/inventoryData';
 
@@ -30,7 +33,8 @@ const Inventory = () => {
     purchaseDate: '',
     expiryDate: '',
     location: '',
-    price: ''
+    price: '',
+    image: null
   });
 
   // Filter items based on search and filters
@@ -62,6 +66,8 @@ const Inventory = () => {
       id: Date.now(),
       quantity: parseFloat(newItem.quantity),
       price: parseFloat(newItem.price),
+      // Convert image file to URL for display
+      imageUrl: newItem.image ? URL.createObjectURL(newItem.image) : null,
       nutritionalInfo: {
         calories: 0,
         protein: 0,
@@ -85,7 +91,8 @@ const Inventory = () => {
       purchaseDate: '',
       expiryDate: '',
       location: '',
-      price: ''
+      price: '',
+      image: null
     });
     setShowAddForm(false);
   };
@@ -490,6 +497,51 @@ const Inventory = () => {
                   className="w-full px-3 py-2 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="0.00"
                 />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Food Picture</label>
+                <div className="relative">
+                  {newItem.image ? (
+                    <div className="relative">
+                      <img 
+                        src={URL.createObjectURL(newItem.image)} 
+                        alt="Food preview" 
+                        className="w-full h-32 object-cover rounded-lg border border-slate-600"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setNewItem({...newItem, image: null})}
+                        className="absolute top-2 right-2 p-1 bg-red-500/80 text-white rounded-full hover:bg-red-500 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer hover:border-slate-500 transition-colors">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Camera className="w-8 h-8 text-slate-500 mb-2" />
+                        <p className="text-sm text-slate-400">
+                          <span className="font-medium">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-slate-500">PNG, JPG or WebP (MAX. 5MB)</p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file && file.size <= 5 * 1024 * 1024) { // 5MB limit
+                            setNewItem({...newItem, image: file});
+                          } else if (file) {
+                            alert('File size must be less than 5MB');
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
             </div>
             

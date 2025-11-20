@@ -1,0 +1,734 @@
+import { useState } from 'react';
+import { 
+  User, 
+  Mail, 
+  Calendar, 
+  Award, 
+  BookOpen, 
+  Edit3, 
+  Save, 
+  X,
+  DollarSign,
+  Scale,
+  Ruler,
+  Activity,
+  Target,
+  TrendingUp
+} from 'lucide-react';
+
+const ProfilePage = () => {
+  const [user, setUser] = useState(() => {
+    // Initialize user data from localStorage with extended profile
+    const userData = localStorage.getItem('user');
+    const defaultUser = {
+      name: 'John Doe',
+      email: 'john@example.com',
+      height: 175, // cm
+      weight: 70, // kg
+      age: 30,
+      gender: 'male',
+      activityLevel: 'moderate',
+      budgetPreference: 50,
+      dietaryRestrictions: ['vegetarian'],
+      sustainabilityGoals: ['reduce-waste', 'local-sourcing']
+    };
+    
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      // Ensure all required fields exist with defaults
+      return {
+        ...defaultUser,
+        ...parsedUser,
+        dietaryRestrictions: parsedUser.dietaryRestrictions || [],
+        sustainabilityGoals: parsedUser.sustainabilityGoals || []
+      };
+    }
+    
+    return defaultUser;
+  });
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState('profile');
+  
+  const [editData, setEditData] = useState({
+    name: user.name || '',
+    email: user.email || '',
+    height: user.height || 175,
+    weight: user.weight || 70,
+    age: user.age || 30,
+    gender: user.gender || 'male',
+    activityLevel: user.activityLevel || 'moderate',
+    budgetPreference: user.budgetPreference || 50,
+    dietaryRestrictions: user.dietaryRestrictions || [],
+    sustainabilityGoals: user.sustainabilityGoals || []
+  });
+
+  // Calculate BMI
+  const calculateBMI = (weight, height) => {
+    const heightInMeters = height / 100;
+    return (weight / (heightInMeters * heightInMeters)).toFixed(1);
+  };
+
+  // Get BMI category and dietary suggestion
+  const getBMICategory = (bmi) => {
+    if (bmi < 18.5) return { category: 'Underweight', color: 'text-blue-400', suggestion: 'Focus on nutrient-dense, calorie-rich foods' };
+    if (bmi < 25) return { category: 'Normal', color: 'text-green-400', suggestion: 'Maintain balanced nutrition and regular exercise' };
+    if (bmi < 30) return { category: 'Overweight', color: 'text-orange-400', suggestion: 'Consider portion control and increased physical activity' };
+    return { category: 'Obese', color: 'text-red-400', suggestion: 'Consult healthcare provider for personalized diet plan' };
+  };
+
+  // Calculate daily calorie needs
+  const calculateDailyCalories = () => {
+    const { weight, height, age, gender, activityLevel } = editData;
+    let bmr;
+    
+    // Harris-Benedict Equation
+    if (gender === 'male') {
+      bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+    } else {
+      bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+    }
+    
+    const activityMultipliers = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.55,
+      active: 1.725,
+      very_active: 1.9
+    };
+    
+    return Math.round(bmr * activityMultipliers[activityLevel]);
+  };
+
+  const handleEditToggle = () => {
+    if (isEditing) {
+      setEditData({
+        name: user.name || '',
+        email: user.email || '',
+        height: user.height || 175,
+        weight: user.weight || 70,
+        age: user.age || 30,
+        gender: user.gender || 'male',
+        activityLevel: user.activityLevel || 'moderate',
+        budgetPreference: user.budgetPreference || 50,
+        dietaryRestrictions: user.dietaryRestrictions || [],
+        sustainabilityGoals: user.sustainabilityGoals || []
+      });
+    }
+    setIsEditing(!isEditing);
+  };
+
+  const handleSave = () => {
+    const updatedUser = { ...user, ...editData };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setIsEditing(false);
+
+    // TODO: Add API call to update user profile
+    // await fetch(`http://localhost:3000/api/users/${user.id}`, {
+    //   method: 'PUT',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(editData)
+    // });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    if (type === 'checkbox') {
+      if (name === 'dietaryRestrictions' || name === 'sustainabilityGoals') {
+        setEditData(prev => ({
+          ...prev,
+          [name]: checked 
+            ? [...prev[name], value]
+            : prev[name].filter(item => item !== value)
+        }));
+      }
+    } else {
+      setEditData(prev => ({
+        ...prev,
+        [name]: type === 'number' ? parseFloat(value) || 0 : value
+      }));
+    }
+  };
+
+  const addConsumptionItem = () => {
+    setConsumptionEntry(prev => ({
+      ...prev,
+      items: [...prev.items, { name: '', quantity: '', category: 'vegetables' }]
+    }));
+  };
+
+  const removeConsumptionItem = (index) => {
+    setConsumptionEntry(prev => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleConsumptionItemChange = (index, field, value) => {
+    setConsumptionEntry(prev => ({
+      ...prev,
+      items: prev.items.map((item, i) => 
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const submitConsumptionEntry = () => {
+    // TODO: Add API call to save consumption entry
+    // await fetch('http://localhost:3000/api/consumption', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(consumptionEntry)
+    // });
+    
+    console.log('Consumption entry:', consumptionEntry);
+    // Reset form
+    setConsumptionEntry({
+      date: new Date().toISOString().split('T')[0],
+      items: [{ name: '', quantity: '', category: 'vegetables' }]
+    });
+  };
+
+  const currentBMI = calculateBMI(user.weight, user.height);
+  const bmiInfo = getBMICategory(currentBMI);
+  const dailyCalories = calculateDailyCalories();
+
+  const categories = ['vegetables', 'fruits', 'grains', 'protein', 'dairy', 'others'];
+  const dietaryOptions = ['vegetarian', 'vegan', 'gluten-free', 'dairy-free', 'keto', 'paleo'];
+  const sustainabilityOptions = ['reduce-waste', 'local-sourcing', 'organic', 'minimal-packaging', 'plant-based'];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-b border-slate-700">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-indigo-500 rounded-full flex items-center justify-center">
+                <User className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-slate-200">My Profile</h1>
+                <p className="text-slate-400">Manage your health profile and dietary preferences</p>
+              </div>
+            </div>
+            <button
+              onClick={handleEditToggle}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/60 border border-slate-600 text-slate-200 rounded-lg hover:bg-slate-700 transition-colors"
+            >
+              {isEditing ? (
+                <>
+                  <X className="w-4 h-4" />
+                  Cancel
+                </>
+              ) : (
+                <>
+                  <Edit3 className="w-4 h-4" />
+                  Edit Profile
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Tab Navigation */}
+        <div className="flex items-center gap-1 mb-8 bg-slate-800/60 p-1 rounded-xl border border-slate-700 w-fit">
+          {[
+            { id: 'profile', label: 'Profile & Health', icon: User },
+            { id: 'consumption', label: 'Daily Consumption', icon: Utensils },
+            { id: 'goals', label: 'Goals & Insights', icon: Target }
+          ].map(tab => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  activeTab === tab.id
+                    ? 'bg-indigo-500/30 text-indigo-300'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Profile & Health Tab */}
+        {activeTab === 'profile' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Basic Information */}
+            <div className="lg:col-span-2">
+              <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-8">
+                <h2 className="text-xl font-semibold text-slate-200 mb-6">Basic Information</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Name */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-200 mb-2">Full Name</label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="name"
+                        value={editData.name}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-3 px-4 py-3 bg-slate-700/30 border border-slate-700 rounded-lg">
+                        <User className="w-5 h-5 text-slate-500" />
+                        <span className="text-slate-200">{user.name}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-200 mb-2">Email</label>
+                    {isEditing ? (
+                      <input
+                        type="email"
+                        name="email"
+                        value={editData.email}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-3 px-4 py-3 bg-slate-700/30 border border-slate-700 rounded-lg">
+                        <Mail className="w-5 h-5 text-slate-500" />
+                        <span className="text-slate-200">{user.email}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Height */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-200 mb-2">Height (cm)</label>
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        name="height"
+                        value={editData.height}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-3 px-4 py-3 bg-slate-700/30 border border-slate-700 rounded-lg">
+                        <Ruler className="w-5 h-5 text-slate-500" />
+                        <span className="text-slate-200">{user.height} cm</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Weight */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-200 mb-2">Weight (kg)</label>
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        name="weight"
+                        value={editData.weight}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-3 px-4 py-3 bg-slate-700/30 border border-slate-700 rounded-lg">
+                        <Scale className="w-5 h-5 text-slate-500" />
+                        <span className="text-slate-200">{user.weight} kg</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Age */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-200 mb-2">Age</label>
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        name="age"
+                        value={editData.age}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-3 px-4 py-3 bg-slate-700/30 border border-slate-700 rounded-lg">
+                        <Calendar className="w-5 h-5 text-slate-500" />
+                        <span className="text-slate-200">{user.age} years</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Gender */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-200 mb-2">Gender</label>
+                    {isEditing ? (
+                      <select
+                        name="gender"
+                        value={editData.gender}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                      </select>
+                    ) : (
+                      <div className="flex items-center gap-3 px-4 py-3 bg-slate-700/30 border border-slate-700 rounded-lg">
+                        <User className="w-5 h-5 text-slate-500" />
+                        <span className="text-slate-200 capitalize">{user.gender}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Activity Level */}
+                <div className="mt-6">
+                  <label className="block text-sm font-semibold text-slate-200 mb-2">Activity Level</label>
+                  {isEditing ? (
+                    <select
+                      name="activityLevel"
+                      value={editData.activityLevel}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="sedentary">Sedentary (little/no exercise)</option>
+                      <option value="light">Light (light exercise 1-3 days/week)</option>
+                      <option value="moderate">Moderate (moderate exercise 3-5 days/week)</option>
+                      <option value="active">Active (hard exercise 6-7 days/week)</option>
+                      <option value="very_active">Very Active (physical job + exercise)</option>
+                    </select>
+                  ) : (
+                    <div className="flex items-center gap-3 px-4 py-3 bg-slate-700/30 border border-slate-700 rounded-lg">
+                      <Activity className="w-5 h-5 text-slate-500" />
+                      <span className="text-slate-200 capitalize">{(user.activityLevel || 'moderate').replace('_', ' ')}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Budget Preference */}
+                <div className="mt-6">
+                  <label className="block text-sm font-semibold text-slate-200 mb-2">Weekly Food Budget ($)</label>
+                  {isEditing ? (
+                    <input
+                      type="number"
+                      name="budgetPreference"
+                      value={editData.budgetPreference}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-3 px-4 py-3 bg-slate-700/30 border border-slate-700 rounded-lg">
+                      <DollarSign className="w-5 h-5 text-slate-500" />
+                      <span className="text-slate-200">${user.budgetPreference}/week</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Dietary Restrictions */}
+                <div className="mt-6">
+                  <label className="block text-sm font-semibold text-slate-200 mb-3">Dietary Restrictions</label>
+                  {isEditing ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {dietaryOptions.map(option => (
+                        <label key={option} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name="dietaryRestrictions"
+                            value={option}
+                            checked={editData.dietaryRestrictions.includes(option)}
+                            onChange={handleInputChange}
+                            className="w-4 h-4 text-indigo-600 bg-slate-700 border-slate-600 rounded focus:ring-indigo-500"
+                          />
+                          <span className="text-slate-200 text-sm capitalize">{option.replace('-', ' ')}</span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {user.dietaryRestrictions.length > 0 ? (
+                        user.dietaryRestrictions.map(restriction => (
+                          <span key={restriction} className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
+                            {restriction.replace('-', ' ')}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-slate-400">No restrictions</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Sustainability Goals */}
+                <div className="mt-6">
+                  <label className="block text-sm font-semibold text-slate-200 mb-3">Sustainability Goals</label>
+                  {isEditing ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {sustainabilityOptions.map(option => (
+                        <label key={option} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name="sustainabilityGoals"
+                            value={option}
+                            checked={editData.sustainabilityGoals.includes(option)}
+                            onChange={handleInputChange}
+                            className="w-4 h-4 text-indigo-600 bg-slate-700 border-slate-600 rounded focus:ring-indigo-500"
+                          />
+                          <span className="text-slate-200 text-sm capitalize">{option.replace('-', ' ')}</span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {user.sustainabilityGoals.length > 0 ? (
+                        user.sustainabilityGoals.map(goal => (
+                          <span key={goal} className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
+                            {goal.replace('-', ' ')}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-slate-400">No goals set</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Save Button */}
+                {isEditing && (
+                  <div className="mt-8 flex justify-end">
+                    <button
+                      onClick={handleSave}
+                      className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-indigo-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-indigo-600 transition-all shadow-lg"
+                    >
+                      <Save className="w-4 h-4" />
+                      Save Changes
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Health Metrics */}
+            <div className="space-y-6">
+              {/* BMI Card */}
+              <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-slate-200 mb-4">Health Metrics</h3>
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-slate-200 mb-1">{currentBMI}</div>
+                    <div className={`text-sm font-medium ${bmiInfo.color}`}>{bmiInfo.category}</div>
+                  </div>
+                  <div className="text-xs text-slate-400 text-center">
+                    {bmiInfo.suggestion}
+                  </div>
+                  <div className="pt-4 border-t border-slate-700">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-slate-400 text-sm">Daily Calories</span>
+                      <span className="text-slate-200 font-medium">{dailyCalories}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-slate-200 mb-4">Activity Summary</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-green-400" />
+                      <span className="text-slate-300 text-sm">Consumption Entries</span>
+                    </div>
+                    <span className="text-slate-200 font-semibold">24</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4 text-blue-400" />
+                      <span className="text-slate-300 text-sm">Goals Achieved</span>
+                    </div>
+                    <span className="text-slate-200 font-semibold">8/12</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Award className="w-4 h-4 text-purple-400" />
+                      <span className="text-slate-300 text-sm">Sustainability Score</span>
+                    </div>
+                    <span className="text-slate-200 font-semibold">82%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Daily Consumption Tab */}
+        {activeTab === 'consumption' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-slate-200">Daily Consumption Log</h2>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setBulkEntryMode(!bulkEntryMode)}
+                      className="text-indigo-400 hover:text-indigo-300 text-sm transition-colors"
+                    >
+                      {bulkEntryMode ? 'Single Day' : 'Multiple Days'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Date Selection */}
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-slate-200 mb-2">Date</label>
+                  <input
+                    type="date"
+                    value={consumptionEntry.date}
+                    onChange={(e) => setConsumptionEntry(prev => ({ ...prev, date: e.target.value }))}
+                    className="px-4 py-3 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                {/* Food Items */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium text-slate-200">Food Items</h3>
+                    <button
+                      onClick={addConsumptionItem}
+                      className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Item
+                    </button>
+                  </div>
+
+                  {consumptionEntry.items.map((item, index) => (
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-700/40 rounded-lg">
+                      <input
+                        type="text"
+                        placeholder="Item name"
+                        value={item.name}
+                        onChange={(e) => handleConsumptionItemChange(index, 'name', e.target.value)}
+                        className="px-3 py-2 bg-slate-600/60 border border-slate-500 rounded text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Quantity"
+                        value={item.quantity}
+                        onChange={(e) => handleConsumptionItemChange(index, 'quantity', e.target.value)}
+                        className="px-3 py-2 bg-slate-600/60 border border-slate-500 rounded text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <select
+                        value={item.category}
+                        onChange={(e) => handleConsumptionItemChange(index, 'category', e.target.value)}
+                        className="px-3 py-2 bg-slate-600/60 border border-slate-500 rounded text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        {categories.map(cat => (
+                          <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => removeConsumptionItem(index)}
+                        className="flex items-center justify-center text-red-400 hover:text-red-300 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Submit Button */}
+                <div className="mt-8 flex justify-end">
+                  <button
+                    onClick={submitConsumptionEntry}
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-indigo-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-indigo-600 transition-all shadow-lg"
+                  >
+                    <Save className="w-4 h-4" />
+                    Log Consumption
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Entries */}
+            <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-slate-200 mb-4">Recent Entries</h3>
+              <div className="space-y-3">
+                {/* Sample recent entries */}
+                <div className="p-3 bg-slate-700/40 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-slate-200 text-sm font-medium">Today</span>
+                    <span className="text-slate-400 text-xs">3 items</span>
+                  </div>
+                  <div className="text-xs text-slate-400">Oatmeal, Banana, Coffee</div>
+                </div>
+                <div className="p-3 bg-slate-700/40 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-slate-200 text-sm font-medium">Yesterday</span>
+                    <span className="text-slate-400 text-xs">5 items</span>
+                  </div>
+                  <div className="text-xs text-slate-400">Chicken, Rice, Vegetables...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Goals & Insights Tab */}
+        {activeTab === 'goals' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-8">
+              <h2 className="text-xl font-semibold text-slate-200 mb-6">Nutrition Goals</h2>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between p-4 bg-slate-700/40 rounded-lg">
+                  <div>
+                    <h4 className="text-slate-200 font-medium">Daily Calories</h4>
+                    <p className="text-slate-400 text-sm">Target: {dailyCalories} cal/day</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-slate-200 font-semibold">2,240</div>
+                    <div className="text-green-400 text-sm">94% achieved</div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-slate-700/40 rounded-lg">
+                  <div>
+                    <h4 className="text-slate-200 font-medium">Weekly Budget</h4>
+                    <p className="text-slate-400 text-sm">Target: ${user.budgetPreference}/week</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-slate-200 font-semibold">${Math.round(user.budgetPreference * 0.85)}</div>
+                    <div className="text-green-400 text-sm">Under budget</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-8">
+              <h2 className="text-xl font-semibold text-slate-200 mb-6">Sustainability Insights</h2>
+              <div className="space-y-4">
+                <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                  <h4 className="text-green-300 font-medium mb-2">Great Progress!</h4>
+                  <p className="text-slate-300 text-sm">You've reduced food waste by 23% this month</p>
+                </div>
+                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                  <h4 className="text-blue-300 font-medium mb-2">Local Sourcing</h4>
+                  <p className="text-slate-300 text-sm">65% of your purchases are from local sources</p>
+                </div>
+                <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                  <h4 className="text-purple-300 font-medium mb-2">Carbon Footprint</h4>
+                  <p className="text-slate-300 text-sm">Your food choices saved 12kg CO2 this week</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ProfilePage;
