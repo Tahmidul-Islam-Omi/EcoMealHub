@@ -7,3 +7,6 @@ export { default as ProfilePage } from './ProfilePage';
 export { default as Inventory } from './Inventory';
 export { default as Recipes } from './Recipes';
 export { default as MealPlanning } from './MealPlanning';
+export { default as ForgotPasswordPage } from './ForgotPasswordPage';
+export { default as VerifyCodePage } from './VerifyCodePage';
+export { default as ResetPasswordPage } from './ResetPasswordPage';

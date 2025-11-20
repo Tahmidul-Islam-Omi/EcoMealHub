@@ -160,13 +160,6 @@ const LoginPage = () => {
             </Link>
           </p>
         </div>
-
-        {/* Demo Note */}
-        <div className="mt-8 bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-4 text-center">
-          <p className="text-sm text-indigo-300">
-            <strong>Demo Mode:</strong> Use any email and password to sign in
-          </p>
-        </div>
       </div>
     </div>
   );
