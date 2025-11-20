@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { LogIn, Mail, Lock, Eye, EyeOff, Leaf } from 'lucide-react';
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -39,8 +42,14 @@ const LoginPage = () => {
       console.log('Login attempt:', formData);
       
       // Simulate successful login
-      localStorage.setItem('user', JSON.stringify({ email: formData.email, name: 'Demo User' }));
-      window.location.href = '/'; // Replace with proper navigation
+      const userData = { 
+        email: formData.email, 
+        name: formData.email.split('@')[0].charAt(0).toUpperCase() + formData.email.split('@')[0].slice(1),
+        id: 1
+      };
+      
+      login(userData);
+      navigate('/');
       
     } catch {
       setError('Login failed. Please check your credentials and try again.');

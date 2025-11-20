@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navigation from './components/Navigation';
+import Dashboard from './pages/Dashboard';
 import HomePage from './pages/HomePage';
 import ResourcesPage from './pages/ResourcesPage';
 import AddResourcePage from './pages/AddResourcePage';
@@ -9,24 +11,62 @@ import ProfilePage from './pages/ProfilePage';
 import Inventory from './pages/Inventory';
 import Recipes from './pages/Recipes';
 import MealPlanning from './pages/MealPlanning';
+import Logs from './pages/Logs';
+import ReceiptUpload from './pages/ReceiptUpload';
+
+const AppContent = () => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-green-500/30 border-t-green-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-900">
+      {isAuthenticated && <Navigation />}
+      <Routes>
+        {isAuthenticated ? (
+          // Authenticated routes
+          <>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/logs" element={<Logs />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/resources" element={<ResourcesPage />} />
+            <Route path="/recipes" element={<Recipes />} />
+            <Route path="/meal-planning" element={<MealPlanning />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/receipt-upload" element={<ReceiptUpload />} />
+            <Route path="/add-resource" element={<AddResourcePage />} />
+            <Route path="*" element={<HomePage />} />
+          </>
+        ) : (
+          // Unauthenticated routes
+          <>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="*" element={<HomePage />} />
+          </>
+        )}
+      </Routes>
+    </div>
+  );
+};
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-slate-900">
-        <Navigation />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/resources" element={<ResourcesPage />} />
-          <Route path="/add-resource" element={<AddResourcePage />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/recipes" element={<Recipes />} />
-          <Route path="/meal-planning" element={<MealPlanning />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-        </Routes>
-      </div>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </Router>
   );
 }

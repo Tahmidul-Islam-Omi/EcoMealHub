@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { UserPlus, Mail, Lock, Eye, EyeOff, User, Leaf, AlertCircle } from 'lucide-react';
 
 const SignUpPage = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -89,11 +92,14 @@ const SignUpPage = () => {
       });
       
       // Simulate successful registration
-      localStorage.setItem('user', JSON.stringify({ 
+      const userData = { 
         email: formData.email, 
-        name: formData.name 
-      }));
-      window.location.href = '/'; // Replace with proper navigation
+        name: formData.name,
+        id: Date.now() // Simple ID generation for demo
+      };
+      
+      login(userData);
+      navigate('/');
       
     } catch {
       setErrors({ submit: 'Registration failed. Please try again.' });
