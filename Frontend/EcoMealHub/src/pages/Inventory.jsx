@@ -36,7 +36,7 @@ const Inventory = () => {
     expiryDate: '',
     location: '',
     price: '',
-    image: null
+    image: null,
     custom_cost: ''
   });
 
