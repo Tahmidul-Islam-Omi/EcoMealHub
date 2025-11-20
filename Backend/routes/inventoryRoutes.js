@@ -12,5 +12,7 @@ router.put('/:item_id', InventoryController.updateInventoryItem);
 
 router.post('/', InventoryController.createUserInventoryItem);
 
+router.get('/global', InventoryController.getGlobalInventoryItems);
+
 
 export default router;

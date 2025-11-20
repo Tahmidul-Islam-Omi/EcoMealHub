@@ -11,6 +11,17 @@ export const getAllInventoryByUser = async (userId) => {
     }
 };
 
+export const getAllGlobalInventoryItems = async () => {
+    try {
+        const items = await GlobalInventory.getAll();
+        return items;
+    }
+    catch (err) {
+        console.log(err);
+        return [];
+    }
+};
+
 export const updateUserInventoryItem = async (user_id, itemId, updateData) => {
     try {
         const updatedItem = await UserInventory.updateItemCustomCost(user_id, itemId, updateData);

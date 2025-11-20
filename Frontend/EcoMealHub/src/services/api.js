@@ -46,7 +46,9 @@ const InventoryAPI = {
 
   deleteInventoryItem: (itemId) => api.delete(`/inventory/${itemId}`),
 
-  createInventoryItem: (inventoryData) => api.post('/inventory', inventoryData)
+  createInventoryItem: (inventoryData) => api.post('/inventory', inventoryData),
+
+  getGlobalInventoryItems: () => api.get('/inventory/global')
 };
 
 const ResourceAPI = {

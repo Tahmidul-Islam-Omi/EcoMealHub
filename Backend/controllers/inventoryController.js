@@ -57,3 +57,13 @@ export const createUserInventoryItem = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+export const getGlobalInventoryItems = async (req, res) => {
+    try {
+        const items = await inventoryService.getAllGlobalInventoryItems();
+        res.json(items);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}   
