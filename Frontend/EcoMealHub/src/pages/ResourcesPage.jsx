@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, BookOpen } from 'lucide-react';
+import { Search, Filter, BookOpen, Clock } from 'lucide-react';
+import { ResourceAPI } from '../services/api';
 import ResourceCard from '../components/ResourceCard';
 import FilterChip from '../components/FilterChip';
-import { SAMPLE_RESOURCES } from '../utills/resourcesData';
 
 const ResourcesPage = () => {
   const [resources, setResources] = useState([]);
@@ -11,6 +11,8 @@ const ResourcesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
+  const [sortByTime, setSortByTime] = useState(false);
+  const [limit, setLimit] = useState(9);
 
   // Fetch resources from API
   useEffect(() => {
@@ -18,12 +20,7 @@ const ResourcesPage = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch('http://localhost:3000/api/v1/resources');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch resources: ${response.statusText}`);
-        }
-        const data = await response.json();
-        // Handle both array and object response
+        const data = await ResourceAPI.getAllResourcesLimited(limit);
         const resourcesArray = Array.isArray(data) ? data : data.data || data.resources || [];
         setResources(resourcesArray);
       } catch (err) {
@@ -36,48 +33,68 @@ const ResourcesPage = () => {
     };
 
     fetchResources();
-  }, []);
+  }, [limit]);
+
+  const handleLoadMore = () => {
+    setLimit(prev => prev + 9);
+  };
+
+  const hasMore = resources.length >= limit;
 
   const categories = useMemo(() => ['all', ...new Set(resources.map(r => r.category || ''))], [resources]);
   const types = useMemo(() => ['all', ...new Set(resources.map(r => r.type || ''))], [resources]);
 
   const filteredResources = useMemo(() => {
-    return resources.filter(r => {
+    let filtered = resources.filter(r => {
       const q = searchQuery.toLowerCase();
       const matchesSearch = r.title.toLowerCase().includes(q) || r.description.toLowerCase().includes(q);
       const matchesCategory = selectedCategory === 'all' || r.category === selectedCategory;
       const matchesType = selectedType === 'all' || r.type === selectedType;
       return matchesSearch && matchesCategory && matchesType;
     });
-  }, [resources, searchQuery, selectedCategory, selectedType]);
+
+    // Sort by time if enabled
+    if (sortByTime) {
+      filtered.sort((a, b) => {
+        const dateA = new Date(a.created_at || 0);
+        const dateB = new Date(b.created_at || 0);
+        return dateB - dateA; // Newest first
+      });
+    }
+
+    return filtered;
+  }, [resources, searchQuery, selectedCategory, selectedType, sortByTime]);
 
   const clearAll = () => {
     setSearchQuery('');
     setSelectedCategory('all');
     setSelectedType('all');
+    setSortByTime(false);
   };
 
-  const hasFilters = searchQuery || selectedCategory !== 'all' || selectedType !== 'all';
+  const hasFilters = searchQuery || selectedCategory !== 'all' || selectedType !== 'all' || sortByTime;
 
   // Show loading state
   if (loading) {
     return (
-      <div className="resources-page">
-        <header className="resources-header">
-          <div className="resources-header-content">
-            <h1 className="resources-title">Sustainability Resources</h1>
-            <p className="resources-subtitle">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <header className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-b border-slate-700 shadow-xl backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 py-12 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-slate-200 mb-3 bg-gradient-to-r from-slate-200 to-indigo-300 bg-clip-text text-transparent">
+              Sustainability Resources
+            </h1>
+            <p className="text-slate-400 max-w-2xl mx-auto font-light">
               Discover guides, tips, and strategies for reducing food waste and eating sustainably
             </p>
           </div>
         </header>
-        <main className="resources-content">
-          <div className="empty-state">
-            <div className="empty-icon">
-              <BookOpen className="w-8 h-8" />
+        <main className="max-w-7xl mx-auto px-4 py-12">
+          <div className="text-center py-20 border border-dashed border-slate-700 rounded-xl bg-slate-800/40">
+            <div className="w-18 h-18 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-5 animate-pulse">
+              <BookOpen className="w-8 h-8 text-indigo-400" />
             </div>
-            <h3 className="empty-title">Loading resources...</h3>
-            <p className="empty-message">Please wait while we fetch the latest resources</p>
+            <h3 className="text-lg font-semibold text-slate-200 mb-2">Loading resources...</h3>
+            <p className="text-slate-400">Please wait while we fetch the latest resources</p>
           </div>
         </main>
       </div>
@@ -87,23 +104,28 @@ const ResourcesPage = () => {
   // Show error state
   if (error) {
     return (
-      <div className="resources-page">
-        <header className="resources-header">
-          <div className="resources-header-content">
-            <h1 className="resources-title">Sustainability Resources</h1>
-            <p className="resources-subtitle">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <header className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-b border-slate-700 shadow-xl backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 py-12 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-slate-200 mb-3 bg-gradient-to-r from-slate-200 to-indigo-300 bg-clip-text text-transparent">
+              Sustainability Resources
+            </h1>
+            <p className="text-slate-400 max-w-2xl mx-auto font-light">
               Discover guides, tips, and strategies for reducing food waste and eating sustainably
             </p>
           </div>
         </header>
-        <main className="resources-content">
-          <div className="empty-state">
-            <div className="empty-icon">
-              <BookOpen className="w-8 h-8" />
+        <main className="max-w-7xl mx-auto px-4 py-12">
+          <div className="text-center py-20 border border-dashed border-slate-700 rounded-xl bg-slate-800/40">
+            <div className="w-18 h-18 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
+              <BookOpen className="w-8 h-8 text-red-400" />
             </div>
-            <h3 className="empty-title">Error loading resources</h3>
-            <p className="empty-message">{error}</p>
-            <button onClick={() => window.location.reload()} className="empty-action">
+            <h3 className="text-lg font-semibold text-slate-200 mb-2">Error loading resources</h3>
+            <p className="text-slate-400 mb-5">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors hover:underline"
+            >
               Try again
             </button>
           </div>
@@ -185,6 +207,24 @@ const ResourcesPage = () => {
             </div>
           </div>
 
+          {/* Sort by Time Button */}
+          <div className="mb-5">
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+              Sort
+            </label>
+            <button
+              onClick={() => setSortByTime(!sortByTime)}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                sortByTime
+                  ? 'bg-indigo-500/30 text-indigo-300 border border-indigo-500/50 shadow-lg shadow-indigo-500/20'
+                  : 'bg-slate-700/40 text-slate-300 border border-slate-600 hover:bg-slate-700/60'
+              }`}
+            >
+              <Clock className="w-4 h-4" />
+              <span>Newest First</span>
+            </button>
+          </div>
+
           {/* Clear All Button */}
           {hasFilters && (
             <button 
@@ -203,11 +243,24 @@ const ResourcesPage = () => {
 
         {/* Resources Grid */}
         {filteredResources.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredResources.map(r => (
-              <ResourceCard key={r.id} resource={r} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredResources.map(r => (
+                <ResourceCard key={r.id} resource={r} />
+              ))}
+            </div>
+            {hasMore && (
+              <div className="flex justify-center mt-12">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loading}
+                  className="px-8 py-3 bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-lg"
+                >
+                  {loading ? 'Loading...' : 'Load More'}
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-20 border border-dashed border-slate-700 rounded-xl bg-slate-800/40">
             <div className="w-18 h-18 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
