@@ -48,7 +48,9 @@ const InventoryAPI = {
 
   createInventoryItem: (inventoryData) => api.post('/inventory', inventoryData),
 
-  getGlobalInventoryItems: () => api.get('/inventory/global')
+  getGlobalInventoryItems: () => api.get('/inventory/global'),
+
+  createGlobalInventoryItem: (itemData) => api.post('/inventory/global', itemData)
 };
 
 const ResourceAPI = {
