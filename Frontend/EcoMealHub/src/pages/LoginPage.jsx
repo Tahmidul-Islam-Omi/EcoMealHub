@@ -26,24 +26,23 @@ const LoginPage = () => {
     setError('');
 
     try {
-      // Simulate login - replace with actual authentication later
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch('http://localhost:5432/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
       
-      // TODO: Replace with actual authentication API call
-      // const response = await fetch('http://localhost:3000/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
+      const data = await response.json();
       
-      console.log('Login attempt:', formData);
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
       
-      // Simulate successful login
-      localStorage.setItem('user', JSON.stringify({ email: formData.email, name: 'Demo User' }));
-      window.location.href = '/'; // Replace with proper navigation
+      localStorage.setItem('user', JSON.stringify(data));
+      window.location.href = '/';
       
-    } catch {
-      setError('Login failed. Please check your credentials and try again.');
+    } catch (err) {
+      setError(err.message || 'Login failed. Please check your credentials and try again.');
     } finally {
       setIsLoading(false);
     }

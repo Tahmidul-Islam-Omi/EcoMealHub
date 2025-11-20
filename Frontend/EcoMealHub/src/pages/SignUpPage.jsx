@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { UserPlus, Mail, Lock, Eye, EyeOff, User, Leaf, AlertCircle } from 'lucide-react';
+import { UserPlus, Mail, Lock, Eye, EyeOff, User, Leaf, AlertCircle, MapPin, Users } from 'lucide-react';
 
 const SignUpPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    user_type: 'individual',
+    household_size: 1,
+    location: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -16,10 +19,17 @@ const SignUpPage = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
+    const newData = {
+      ...formData,
       [name]: value
-    }));
+    };
+
+    // If user_type is individual, set household_size to 1
+    if (name === 'user_type' && value === 'individual') {
+      newData.household_size = 1;
+    }
+
+    setFormData(newData);
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -54,6 +64,14 @@ const SignUpPage = () => {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
+    if (formData.user_type !== 'individual' && !formData.household_size) {
+      newErrors.household_size = 'Household size is required';
+    }
+
+    if (!formData.location.trim()) {
+      newErrors.location = 'Location is required';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -68,35 +86,30 @@ const SignUpPage = () => {
     setIsLoading(true);
 
     try {
-      // Simulate registration - replace with actual API call later
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // TODO: Replace with actual registration API call
-      // const response = await fetch('http://localhost:3000/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     name: formData.name,
-      //     email: formData.email,
-      //     password: formData.password
-      //   })
-      // });
-      
-      console.log('Registration attempt:', {
-        name: formData.name,
-        email: formData.email,
-        password: '[HIDDEN]'
+      const response = await fetch('http://localhost:5432/api/v1/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          user_type: formData.user_type,
+          household_size: parseInt(formData.household_size),
+          location: formData.location
+        })
       });
-      
-      // Simulate successful registration
-      localStorage.setItem('user', JSON.stringify({ 
-        email: formData.email, 
-        name: formData.name 
-      }));
-      window.location.href = '/'; // Replace with proper navigation
-      
-    } catch {
-      setErrors({ submit: 'Registration failed. Please try again.' });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      localStorage.setItem('user', JSON.stringify(data));
+      window.location.href = '/';
+
+    } catch (err) {
+      setErrors({ submit: err.message || 'Registration failed. Please try again.' });
     } finally {
       setIsLoading(false);
     }
@@ -170,6 +183,84 @@ const SignUpPage = () => {
                 <div className="flex items-center gap-1 mt-2 text-red-400 text-sm">
                   <AlertCircle className="w-4 h-4" />
                   {errors.email}
+                </div>
+              )}
+            </div>
+
+            {/* User Type */}
+            <div>
+              <label htmlFor="user_type" className="block text-sm font-semibold text-slate-200 mb-2">
+                User Type
+              </label>
+              <div className="relative">
+                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 w-5 h-5" />
+                <select
+                  id="user_type"
+                  name="user_type"
+                  value={formData.user_type}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all appearance-none cursor-pointer"
+                >
+                  <option value="individual">Individual</option>
+                  <option value="family">Family</option>
+                  <option value="community">Community</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Household Size */}
+            {formData.user_type !== 'individual' && (
+              <div>
+                <label htmlFor="household_size" className="block text-sm font-semibold text-slate-200 mb-2">
+                  Household Size
+                </label>
+                <div className="relative">
+                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 w-5 h-5" />
+                  <input
+                    type="number"
+                    id="household_size"
+                    name="household_size"
+                    value={formData.household_size}
+                    onChange={handleInputChange}
+                    min="2"
+                    className={`w-full pl-10 pr-4 py-3 bg-slate-700/60 border rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${
+                      errors.household_size ? 'border-red-500' : 'border-slate-600'
+                    }`}
+                    placeholder="Enter household size"
+                  />
+                </div>
+                {errors.household_size && (
+                  <div className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.household_size}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Location */}
+            <div>
+              <label htmlFor="location" className="block text-sm font-semibold text-slate-200 mb-2">
+                Location
+              </label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 w-5 h-5" />
+                <input
+                  type="text"
+                  id="location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  className={`w-full pl-10 pr-4 py-3 bg-slate-700/60 border rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${
+                    errors.location ? 'border-red-500' : 'border-slate-600'
+                  }`}
+                  placeholder="Enter your location"
+                />
+              </div>
+              {errors.location && (
+                <div className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.location}
                 </div>
               )}
             </div>
@@ -280,13 +371,6 @@ const SignUpPage = () => {
             <Link to="/login" className="text-green-400 hover:text-green-300 font-semibold transition-colors">
               Sign in here
             </Link>
-          </p>
-        </div>
-
-        {/* Demo Note */}
-        <div className="mt-8 bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-4 text-center">
-          <p className="text-sm text-indigo-300">
-            <strong>Demo Mode:</strong> Registration will create a local demo account
           </p>
         </div>
       </div>
