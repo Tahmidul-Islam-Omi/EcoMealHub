@@ -1,4 +1,6 @@
 export { default as HomePage } from './HomePage';
+export { default as Dashboard } from './Dashboard';
+export { default as Logs } from './Logs';
 export { default as ResourcesPage } from './ResourcesPage';
 export { default as AddResourcePage } from './AddResourcePage';
 export { default as LoginPage } from './LoginPage';
@@ -11,3 +13,4 @@ export { default as ForgotPasswordPage } from './ForgotPasswordPage';
 export { default as VerifyCodePage } from './VerifyCodePage';
 export { default as ResetPasswordPage } from './ResetPasswordPage';
 export { default as GoogleAuthSuccess } from './GoogleAuthSuccess';
+export { default as ReceiptUpload } from './ReceiptUpload';

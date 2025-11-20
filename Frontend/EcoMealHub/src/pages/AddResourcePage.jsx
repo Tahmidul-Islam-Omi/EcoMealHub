@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import { PlusCircle, Upload, Link as LinkIcon, AlertCircle } from 'lucide-react';
+import { ResourceAPI } from '../services/api';
 
 const AddResourcePage = () => {
+
+  const user_id = localStorage.getItem('user_id') || '';
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     url: '',
     category: '',
+    user_id: user_id, // Placeholder user ID; replace with actual user context
     type: 'article'
   });
 
@@ -87,16 +92,10 @@ const AddResourcePage = () => {
     
     try {
       // Simulate API call - replace with actual API integration later
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // await new Promise(resolve => setTimeout(resolve, 1500));
       
       // TODO: Replace with actual API call to backend
-      // const response = await fetch('http://localhost:3000/api/v1/resources', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(formData)
-      // });
+      const response = await ResourceAPI.createResource(formData);
       
       console.log('Resource data to be submitted:', formData);
       

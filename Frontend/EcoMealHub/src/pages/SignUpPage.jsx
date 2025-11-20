@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { UserPlus, Mail, Lock, Eye, EyeOff, User, Leaf, AlertCircle, MapPin, Users } from 'lucide-react';
 
 const SignUpPage = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
