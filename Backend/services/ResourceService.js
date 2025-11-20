@@ -1,12 +1,13 @@
 import db from "../config/db.js";
-import { ResourceTable } from "../models/ResourcesModel.js";
+import { ResourceTable } from "../models/Resources.js";
+import Resources from "../models/Resources.js";
 
 export const getAllResources = async () => {
     
     try{    
-        const data=await db.query(`SELECT * from ${ResourceTable};`);
-        console.log(data.rows);
-        return data.rows;
+        const data=await Resources.getAll();
+        console.log("data");
+        return data;
     }
     catch(err){
         console.log(err);
@@ -18,22 +19,11 @@ export const getAllResources = async () => {
 
 
 export const createResource = async (resourceData) => {
-    const { rows: [data] } = await db.query(
-        `INSERT INTO ${ResourceTable} (name, type, quantity, location, expiry_date, contact_info) 
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;`,
-        [
-            resourceData.name,
-            resourceData.type,
-            resourceData.quantity,
-            resourceData.location,
-            resourceData.expiry_date,
-            resourceData.contact_info
-        ]
-    );  
+    console.log(resourceData);
+    
+    const data = await Resources.create(resourceData);
 
     console.log("Resource data to be inserted:", resourceData);
     console.log("Inserted resource data:", data);
     return data;
-
-
 }
