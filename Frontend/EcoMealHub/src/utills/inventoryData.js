@@ -230,16 +230,6 @@ export const UNITS = [
 
 // API service functions (commented out for demo - uncomment when backend is ready)
 /*
-export const fetchInventoryItems = async () => {
-  try {
-    const response = await fetch('http://localhost:3000/api/v1/inventory');
-    if (!response.ok) throw new Error('Failed to fetch inventory items');
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching inventory:', error);
-    return SAMPLE_INVENTORY_ITEMS; // Fallback to dummy data
-  }
-};
 
 export const createInventoryItem = async (itemData) => {
   try {

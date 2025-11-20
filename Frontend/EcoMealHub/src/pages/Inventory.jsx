@@ -15,7 +15,9 @@ import {
   Upload,
   X,
   Clock,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ChevronDown,
+  ArrowLeft
 } from 'lucide-react';
 
 import { InventoryAPI } from '../services/api';
@@ -28,16 +30,28 @@ const Inventory = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [showNewItemForm, setShowNewItemForm] = useState(false);
+  
+  // Global items state
+  const [globalItems, setGlobalItems] = useState([]);
+  const [globalItemsLoading, setGlobalItemsLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedGlobalItem, setSelectedGlobalItem] = useState(null);
+  
+  // Form states
   const [newItem, setNewItem] = useState({
     item_id: '',
     quantity: '',
     unit: '',
-    purchaseDate: '',
-    expiryDate: '',
-    location: '',
-    price: '',
-    image: null,
     custom_cost: ''
+  });
+  
+  const [newGlobalItem, setNewGlobalItem] = useState({
+    item_name: '',
+    category: '',
+    expiration_days: '',
+    cost: '',
+    image: null
   });
 
   // Fetch inventory items from API
@@ -60,6 +74,32 @@ const Inventory = () => {
 
     fetchInventory();
   }, []);
+
+  // Fetch global inventory items
+  const fetchGlobalItems = async () => {
+    try {
+      setGlobalItemsLoading(true);
+      const data = await InventoryAPI.getGlobalInventoryItems();
+      const globalItemsArray = Array.isArray(data) ? data : data.data || [];
+      setGlobalItems(globalItemsArray);
+    } catch (err) {
+      console.error('Error fetching global items:', err);
+    } finally {
+      setGlobalItemsLoading(false);
+    }
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showDropdown && !event.target.closest('.dropdown-container')) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDropdown]);
 
   // Get unique categories from items
   const categories = useMemo(() => ['all', ...new Set(items.map(i => i.category || ''))], [items]);
@@ -85,42 +125,62 @@ const Inventory = () => {
   }, [items]);
 
   const handleAddItem = async () => {
-    // TODO: Replace with API call
-    // await createInventoryItem(newItem);
-    const item = {
-      id: Date.now(),
-      ...newItem,
-      quantity: parseFloat(newItem.quantity),
-      price: parseFloat(newItem.price),
-      // Convert image file to URL for display
-      imageUrl: newItem.image ? URL.createObjectURL(newItem.image) : null,
-      nutritionalInfo: {
-        calories: 0,
-        protein: 0,
-        carbs: 0,
-        fiber: 0,
-        sugar: 0
-      },
-      alerts: {
-        lowStock: parseFloat(newItem.quantity) < 3,
-        nearExpiry: new Date(newItem.expiryDate) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        expired: new Date(newItem.expiryDate) < new Date()
+    try {
+      if (!selectedGlobalItem) return;
+      
+      const inventoryData = {
+        item_id: selectedGlobalItem.id,
+        quantity: parseFloat(newItem.quantity),
+        unit: newItem.unit,
+        custom_cost: newItem.custom_cost ? parseFloat(newItem.custom_cost) : null
+      };
+      
+      await InventoryAPI.createInventoryItem(inventoryData);
+      
+      // Refresh inventory
+      const data = await InventoryAPI.getInventory(1);
+      const inventoryArray = Array.isArray(data) ? data : data.data || data.inventory || [];
+      setItems(inventoryArray);
+      
+      // Reset form
+      setNewItem({ item_id: '', quantity: '', unit: '', custom_cost: '' });
+      setSelectedGlobalItem(null);
+      setShowAddForm(false);
+    } catch (err) {
+      console.error('Error adding item:', err);
+      alert('Failed to add item. Please try again.');
+    }
+  };
+
+  const handleAddNewGlobalItem = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('item_name', newGlobalItem.item_name);
+      formData.append('category', newGlobalItem.category);
+      formData.append('expiration_days', parseInt(newGlobalItem.expiration_days));
+      formData.append('cost', parseFloat(newGlobalItem.cost));
+      if (newGlobalItem.image) {
+        formData.append('image', newGlobalItem.image);
       }
-    };
-    
-    setItems([...items, item]);
-    setNewItem({
-      name: '',
-      category: '',
-      quantity: '',
-      unit: '',
-      purchaseDate: '',
-      expiryDate: '',
-      location: '',
-      price: '',
-      image: null
-    });
-    setShowAddForm(false);
+      
+      await InventoryAPI.createGlobalInventoryItem(formData);
+      
+      // Reset form
+      setNewGlobalItem({
+        item_name: '',
+        category: '',
+        expiration_days: '',
+        cost: '',
+        image: null
+      });
+      setShowNewItemForm(false);
+      setShowAddForm(false);
+      
+      alert('New item added successfully! It will be available after admin approval.');
+    } catch (err) {
+      console.error('Error adding new global item:', err);
+      alert('Failed to add new item. Please try again.');
+    }
   };
 
   const handleEditItem = (item) => {
@@ -162,9 +222,13 @@ const Inventory = () => {
   };
 
   const handleDeleteItem = async (itemId) => {
-    // TODO: Replace with API call
-    const response = await InventoryAPI.deleteInventoryItem(itemId);
-    setItems(items.filter(item => item.item_id !== itemId));
+    try {
+      await InventoryAPI.deleteInventoryItem(itemId);
+      setItems(items.filter(item => item.item_id !== itemId));
+    } catch (err) {
+      console.error('Error deleting item:', err);
+      alert('Failed to delete item. Please try again.');
+    }
   };
 
   const getExpiryStatus = (expirationDays) => {
@@ -410,24 +474,103 @@ const Inventory = () => {
       </section>
 
       {/* Add/Edit Modal */}
-      {showAddForm && (
+      {showAddForm && !showNewItemForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-semibold text-slate-200 mb-6">
               {editingItem ? 'Edit Item' : 'Add Item'}
             </h2>
             
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Item ID</label>
-                <input
-                  type="number"
-                  value={newItem.item_id}
-                  onChange={(e) => setNewItem({...newItem, item_id: e.target.value})}
-                  className="w-full px-3 py-2 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Enter item ID"
-                />
-              </div>
+              {!editingItem && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">Select Item</label>
+                  <div className="relative dropdown-container">
+                    <button
+                      onClick={() => {
+                        setShowDropdown(!showDropdown);
+                        if (!showDropdown && globalItems.length === 0) {
+                          fetchGlobalItems();
+                        }
+                      }}
+                      className="w-full px-3 py-2 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center justify-between"
+                    >
+                      {selectedGlobalItem ? (
+                        <div className="flex items-center gap-2">
+                          {selectedGlobalItem.image_url && (
+                            <img 
+                              src={selectedGlobalItem.image_url} 
+                              alt={selectedGlobalItem.item_name}
+                              className="w-6 h-6 rounded object-cover"
+                            />
+                          )}
+                          <span>{selectedGlobalItem.item_name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400">Select an item...</span>
+                      )}
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    </button>
+                    
+                    {showDropdown && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-slate-700 border border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto z-10">
+                        {globalItemsLoading ? (
+                          <div className="p-4 text-center text-slate-400">Loading items...</div>
+                        ) : globalItems.length > 0 ? (
+                          <>
+                            {globalItems.map((item) => (
+                              <button
+                                key={item.id}
+                                onClick={() => {
+                                  setSelectedGlobalItem(item);
+                                  setShowDropdown(false);
+                                }}
+                                className="w-full px-3 py-2 text-left hover:bg-slate-600 transition-colors flex items-center gap-2"
+                              >
+                                {item.image_url && (
+                                  <img 
+                                    src={item.image_url} 
+                                    alt={item.item_name}
+                                    className="w-8 h-8 rounded object-cover"
+                                  />
+                                )}
+                                <div>
+                                  <div className="text-slate-200 font-medium">{item.item_name}</div>
+                                  <div className="text-slate-400 text-sm capitalize">{item.category}</div>
+                                </div>
+                              </button>
+                            ))}
+                            <button
+                              onClick={() => {
+                                setShowDropdown(false);
+                                setShowNewItemForm(true);
+                              }}
+                              className="w-full px-3 py-2 text-left border-t border-slate-600 hover:bg-slate-600 transition-colors text-green-400 font-medium flex items-center gap-2"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Add New Item
+                            </button>
+                          </>
+                        ) : (
+                          <div className="p-4">
+                            <div className="text-center text-slate-400 mb-2">No items available</div>
+                            <button
+                              onClick={() => {
+                                setShowDropdown(false);
+                                setShowNewItemForm(true);
+                              }}
+                              className="w-full px-3 py-2 text-center hover:bg-slate-600 transition-colors text-green-400 font-medium flex items-center justify-center gap-2"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Add New Item
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               
               <div>
                 <label className="block text-sm font-medium text-slate-200 mb-2">Quantity</label>
@@ -463,20 +606,106 @@ const Inventory = () => {
                   placeholder="Leave empty to use default cost"
                 />
               </div>
+            </div>
+            
+            <div className="flex justify-end gap-4 mt-6">
+              <button
+                onClick={() => {
+                  setShowAddForm(false);
+                  setEditingItem(null);
+                  setSelectedGlobalItem(null);
+                  setNewItem({ item_id: '', quantity: '', unit: '', custom_cost: '' });
+                  setShowDropdown(false);
+                }}
+                className="px-4 py-2 text-slate-400 hover:text-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={editingItem ? handleUpdateItem : handleAddItem}
+                disabled={!editingItem && !selectedGlobalItem}
+                className="px-4 py-2 bg-gradient-to-r from-green-500 to-indigo-500 text-white rounded-lg font-medium hover:from-green-600 hover:to-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {editingItem ? 'Update' : 'Add'} Item
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add New Global Item Modal */}
+      {showNewItemForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-3 mb-6">
+              <button
+                onClick={() => setShowNewItemForm(false)}
+                className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <h2 className="text-xl font-semibold text-slate-200">Add New Item</h2>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Item Name</label>
+                <input
+                  type="text"
+                  value={newGlobalItem.item_name}
+                  onChange={(e) => setNewGlobalItem({...newGlobalItem, item_name: e.target.value})}
+                  className="w-full px-3 py-2 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Enter item name"
+                />
+              </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Food Picture</label>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Category</label>
+                <input
+                  type="text"
+                  value={newGlobalItem.category}
+                  onChange={(e) => setNewGlobalItem({...newGlobalItem, category: e.target.value})}
+                  className="w-full px-3 py-2 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="e.g., fruits, vegetables, dairy"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Expiration Days</label>
+                <input
+                  type="number"
+                  value={newGlobalItem.expiration_days}
+                  onChange={(e) => setNewGlobalItem({...newGlobalItem, expiration_days: e.target.value})}
+                  className="w-full px-3 py-2 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Days until expiration"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Cost</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={newGlobalItem.cost}
+                  onChange={(e) => setNewGlobalItem({...newGlobalItem, cost: e.target.value})}
+                  className="w-full px-3 py-2 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="0.00"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Item Picture</label>
                 <div className="relative">
-                  {newItem.image ? (
+                  {newGlobalItem.image ? (
                     <div className="relative">
                       <img 
-                        src={URL.createObjectURL(newItem.image)} 
-                        alt="Food preview" 
+                        src={URL.createObjectURL(newGlobalItem.image)} 
+                        alt="Item preview" 
                         className="w-full h-32 object-cover rounded-lg border border-slate-600"
                       />
                       <button
                         type="button"
-                        onClick={() => setNewItem({...newItem, image: null})}
+                        onClick={() => setNewGlobalItem({...newGlobalItem, image: null})}
                         className="absolute top-2 right-2 p-1 bg-red-500/80 text-white rounded-full hover:bg-red-500 transition-colors"
                       >
                         <X className="w-4 h-4" />
@@ -497,8 +726,8 @@ const Inventory = () => {
                         accept="image/*"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          if (file && file.size <= 5 * 1024 * 1024) { // 5MB limit
-                            setNewItem({...newItem, image: file});
+                          if (file && file.size <= 5 * 1024 * 1024) {
+                            setNewGlobalItem({...newGlobalItem, image: file});
                           } else if (file) {
                             alert('File size must be less than 5MB');
                           }
@@ -513,19 +742,25 @@ const Inventory = () => {
             <div className="flex justify-end gap-4 mt-6">
               <button
                 onClick={() => {
-                  setShowAddForm(false);
-                  setEditingItem(null);
-                  setNewItem({ item_id: '', quantity: '', unit: '', custom_cost: '' });
+                  setShowNewItemForm(false);
+                  setNewGlobalItem({
+                    item_name: '',
+                    category: '',
+                    expiration_days: '',
+                    cost: '',
+                    image: null
+                  });
                 }}
                 className="px-4 py-2 text-slate-400 hover:text-slate-200 transition-colors"
               >
                 Cancel
               </button>
               <button
-                onClick={editingItem ? handleUpdateItem : handleAddItem}
-                className="px-4 py-2 bg-gradient-to-r from-green-500 to-indigo-500 text-white rounded-lg font-medium hover:from-green-600 hover:to-indigo-600 transition-all"
+                onClick={handleAddNewGlobalItem}
+                disabled={!newGlobalItem.item_name || !newGlobalItem.category || !newGlobalItem.expiration_days || !newGlobalItem.cost}
+                className="px-4 py-2 bg-gradient-to-r from-green-500 to-indigo-500 text-white rounded-lg font-medium hover:from-green-600 hover:to-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {editingItem ? 'Update' : 'Add'} Item
+                Submit for Approval
               </button>
             </div>
           </div>
