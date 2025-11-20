@@ -24,36 +24,36 @@ class Resources {
 
     static async create(data) {
         const { title, description, url, category, user_id, accepted } = data;
-        const result = await db.query(
-            `INSERT INTO ${ResourceTable} (title, description, url, category, user_id, accepted) 
-             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;`,
-            [title, description, url, category, user_id, accepted]
-        );
-        return result.rows[0];
+        const result = await db`
+            INSERT INTO resources (title, description, url, category, user_id, accepted) 
+            VALUES (${title}, ${description}, ${url}, ${category}, ${user_id}, ${accepted})
+            RETURNING *`;
+        ;
+        return result[0];
     }
 
     static async getByUserId(user_id) {
-        const result = await db.query(
-            `SELECT * FROM ${ResourceTable} WHERE user_id = $1;`,
-            [user_id]
-        );
-        return result.rows;
+        const result = await db`
+            SELECT * FROM ${ResourceTable} WHERE user_id = ${user_id};`
+        ;
+        return result;
     }
 
     static async acceptResource(id) {
-        const result = await db.query(
-            `UPDATE ${ResourceTable} SET accepted = true WHERE id = $1 RETURNING *;`,
-            [id]
-        );
-        return result.rows[0];
+        const result = await db`
+            UPDATE ${ResourceTable} 
+            SET accepted = true 
+            WHERE id = ${id} 
+            RETURNING *;
+        `;
+        return result[0];
     }
     
     static async delete(id) {
-        const result = await db.query(
-            `DELETE FROM ${ResourceTable} WHERE id = $1 RETURNING *;`,
-            [id]
-        );
-        return result.rows[0];
+        const result = await db`
+            DELETE FROM ${ResourceTable} WHERE id = ${id} RETURNING *;`
+        
+        return result[0];
     }
 
 }
