@@ -26,7 +26,7 @@ const ResourceCard = ({ resource }) => {
       </h3>
 
       {/* Description */}
-      <p className="text-slate-400 text-sm leading-relaxed mb-6">
+      <p className="text-slate-400 text-sm leading-relaxed mb-6 line-clamp-3">
         {resource.description}
       </p>
 
