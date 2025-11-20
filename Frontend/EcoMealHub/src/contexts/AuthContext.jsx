@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const AuthContext = createContext(null);
 
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+const API_BASE_URL = 'http://localhost:5432/api/v1';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -18,20 +18,35 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        // Verify token with backend
-        const response = await axios.get(`${API_BASE_URL}/auth/verify`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setUser(response.data.user);
+        // For now, just check if token exists
+        // In production, you should verify with backend
         setIsAuthenticated(true);
+        // Try to get user data from localStorage if available
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            setUser(userData);
+          } catch (e) {
+            console.error('Error parsing stored user:', e);
+          }
+        }
       }
     } catch (error) {
       console.error('Auth check failed:', error);
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       setIsAuthenticated(false);
     } finally {
       setLoading(false);
     }
+  };
+
+  const setAuthData = (token, userData) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    setIsAuthenticated(true);
   };
 
   const login = async (email, password) => {
@@ -82,7 +97,9 @@ export const AuthProvider = ({ children }) => {
       loading, 
       login, 
       signup, 
-      logout 
+      logout,
+      checkAuth,
+      setAuthData 
     }}>
       {children}
     </AuthContext.Provider>

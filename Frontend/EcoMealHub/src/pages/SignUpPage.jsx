@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { UserPlus, Mail, Lock, Eye, EyeOff, User, Leaf, AlertCircle, MapPin, Users } from 'lucide-react';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -87,34 +88,22 @@ const SignUpPage = () => {
 
     setIsLoading(true);
 
-    try {
-      const response = await fetch('http://localhost:5432/api/v1/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          full_name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          user_type: formData.user_type,
-          household_size: parseInt(formData.household_size),
-          location: formData.location
-        })
-      });
+    const result = await signup({
+      full_name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      user_type: formData.user_type,
+      household_size: parseInt(formData.household_size),
+      location: formData.location
+    });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
-
-      localStorage.setItem('user', JSON.stringify(data));
-      window.location.href = '/';
-
-    } catch (err) {
-      setErrors({ submit: err.message || 'Registration failed. Please try again.' });
-    } finally {
-      setIsLoading(false);
+    if (result.success) {
+      navigate('/');
+    } else {
+      setErrors({ submit: result.error || 'Registration failed. Please try again.' });
     }
+
+    setIsLoading(false);
   };
 
   return (

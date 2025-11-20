@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { Leaf } from 'lucide-react';
 
 const GoogleAuthSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { setAuthData } = useAuth();
 
   useEffect(() => {
     const token = searchParams.get('token');
@@ -12,7 +14,6 @@ const GoogleAuthSuccess = () => {
     const error = searchParams.get('error');
 
     if (error) {
-      // Handle error
       alert('Google authentication failed. Please try again.');
       navigate('/login');
       return;
@@ -22,28 +23,19 @@ const GoogleAuthSuccess = () => {
       try {
         const user = JSON.parse(decodeURIComponent(userStr));
         
-        // Store token and user data
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify({
-          success: true,
-          data: {
-            user,
-            token
-          }
-        }));
-
-        // Redirect to home page
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1000);
+        // Update auth context with token and user data
+        setAuthData(token, user);
+        
+        // Navigate to home
+        navigate('/');
       } catch (err) {
-        console.error('Error parsing user data:', err);
+        console.error('Error during Google auth:', err);
         navigate('/login');
       }
     } else {
       navigate('/login');
     }
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, setAuthData]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4">

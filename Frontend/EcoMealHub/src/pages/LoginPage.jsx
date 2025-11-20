@@ -28,27 +28,15 @@ const LoginPage = () => {
     setIsLoading(true);
     setError('');
 
-    try {
-      const response = await fetch('http://localhost:5432/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-      
-      localStorage.setItem('user', JSON.stringify(data));
-      window.location.href = '/';
-      
-    } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials and try again.');
-    } finally {
-      setIsLoading(false);
+    const result = await login(formData.email, formData.password);
+    
+    if (result.success) {
+      navigate('/');
+    } else {
+      setError(result.error || 'Login failed. Please check your credentials and try again.');
     }
+    
+    setIsLoading(false);
   };
 
   return (

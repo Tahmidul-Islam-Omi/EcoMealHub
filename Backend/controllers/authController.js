@@ -30,6 +30,7 @@ class AuthController {
     static async login(req, res, next) {
         try {
             const { email, password } = req.body;
+            console.log('###########Received login request:', { email, password });
 
             const { user, token } = await AuthService.loginUser({
                 email,
