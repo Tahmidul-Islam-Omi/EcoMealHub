@@ -3,7 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { testConnection } from "./config/db.js";
 import apiRoutes from "./routes/index.js";
-import { ErrorHandler } from "./middlewares/index.js";
+import { AuthMiddleware, ErrorHandler } from "./middlewares/index.js";
 
 
 
@@ -26,6 +26,8 @@ app.get('/health', (req, res) => {
 
 // 404 handler
 app.use(ErrorHandler.notFound);
+
+app.use(AuthMiddleware.authenticate);
 
 // Error handler
 app.use(ErrorHandler.handle);

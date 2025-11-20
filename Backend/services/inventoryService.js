@@ -56,3 +56,14 @@ export const createUserInventoryItem = async (user_id, item_id, quantity, unit, 
 }
 
 
+export const createGlobalInventoryItem = async ( item) => {
+    try{
+        const newItem = await GlobalInventory.create(item.item_name, item.category, item.expiration_days, item.cost, item.image_url);
+        return newItem;
+    }
+    catch (err) {
+        console.log(err);
+        throw new Error('Failed to create global inventory item');
+    }
+
+}

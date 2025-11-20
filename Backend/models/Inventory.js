@@ -15,6 +15,15 @@ class GlobalInventory {
         `;
         return item || null;
     }
+
+    static async create(item_name, category, expiration_days, cost, image_url){
+        const [item] = await db`
+            INSERT INTO ${db(GlobalInventoryTable)} (item_name, category, expiration_days, cost, image_url)
+            VALUES (${item_name}, ${category}, ${expiration_days}, ${cost}, ${image_url})
+            RETURNING *
+        `;
+        return item;
+    }
     
 }
 

@@ -14,5 +14,7 @@ router.post('/', InventoryController.createUserInventoryItem);
 
 router.get('/global', InventoryController.getGlobalInventoryItems);
 
+router.post('/global', InventoryController.createGlobalInventoryItem);
+
 
 export default router;
