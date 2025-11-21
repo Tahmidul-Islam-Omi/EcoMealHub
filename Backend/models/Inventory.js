@@ -40,6 +40,7 @@ class UserInventory {
             gi.item_name,
             gi.category,
             gi.expiration_days,
+            gi.calories,
             COALESCE(ui.custom_cost, gi.cost) as cost,
             gi.image_url
             FROM ${db(UserInventoryTable)} ui

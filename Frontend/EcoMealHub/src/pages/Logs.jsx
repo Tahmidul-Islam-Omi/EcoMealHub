@@ -12,7 +12,7 @@ import {
   X
 } from 'lucide-react';
 
-import { LogAPI } from '../services/api';
+import { LogAPI, InventoryAPI } from '../services/api';
 
 const Logs = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,7 +68,8 @@ const Logs = () => {
           calories: log.calory,
           cost: log.cost,
           waste: log.waste,
-          time: time
+          time: time,
+          food_items: log.food_items || []
         });
         
         acc[date].totalCalories += log.calory;
@@ -92,36 +93,37 @@ const Logs = () => {
   };
 
   const fetchInventory = async () => {
-    // TODO: Replace with actual API call
-    // const response = await fetch('http://localhost:3000/api/v1/inventory');
-    // const data = await response.json();
-    // setInventoryItems(data);
-    
-    // Dummy inventory data
-    setInventoryItems([
-      { id: 1, item_name: 'Chicken Breast', cost: 8.50, category: 'protein', unit: 'kg' },
-      { id: 2, item_name: 'Rice', cost: 2.00, category: 'grains', unit: 'kg' },
-      { id: 3, item_name: 'Broccoli', cost: 3.00, category: 'vegetables', unit: 'kg' }
-    ]);
+    try {
+      const data = await InventoryAPI.getInventory();
+      console.log('Fetched inventory:', data);
+      setInventoryItems(data);
+    } catch (error) {
+      console.error('Error fetching inventory:', error);
+      setInventoryItems([]);
+    }
   };
 
   const handleAddItemToLog = () => {
     if (!selectedItem.item_id || !selectedItem.quantity) return;
     
-    const item = inventoryItems.find(i => i.id === parseInt(selectedItem.item_id));
+    const item = inventoryItems.find(i => i.item_id === parseInt(selectedItem.item_id));
     if (!item) return;
 
-    const itemCost = item.cost * parseFloat(selectedItem.quantity);
+    const itemCost = (item.custom_cost || item.cost) * parseFloat(selectedItem.quantity);
     const itemWaste = parseFloat(selectedItem.waste) || 0;
+    const itemCalories = (item.calories || 0) * parseFloat(selectedItem.quantity);
+    
+    console.log('Item calories:', item.calories, 'Quantity:', selectedItem.quantity, 'Total:', itemCalories);
     
     setNewLog(prev => ({
       ...prev,
       items: [...prev.items, {
-        item_id: item.id,
+        item_id: item.item_id,
         item_name: item.item_name,
         quantity: parseFloat(selectedItem.quantity),
         waste: itemWaste,
-        cost: itemCost
+        cost: itemCost,
+        calories: itemCalories
       }]
     }));
 
@@ -136,19 +138,24 @@ const Logs = () => {
   };
 
   const handleSubmitLog = async () => {
-    const totalCalories = newLog.items.reduce((sum, item) => sum + (item.quantity * 100), 0); // Rough estimate
+    const totalCalories = newLog.items.reduce((sum, item) => sum + item.calories, 0);
     const totalCost = newLog.items.reduce((sum, item) => sum + item.cost, 0);
     const totalWaste = newLog.items.reduce((sum, item) => sum + item.waste, 0);
+    const foodItemIds = newLog.items.map(item => item.item_id);
 
     const logData = {
       meal_type: newLog.meal_type,
       calory: totalCalories,
       cost: totalCost,
       waste: totalWaste,
-      log_date: newLog.log_date
+      log_date: newLog.log_date,
+      food_items: foodItemIds
     };
 
     try {
+
+      console.log(logData);
+      
       await LogAPI.createLogEntry(logData);
       fetchLogs();
       setShowAddForm(false);
@@ -168,6 +175,72 @@ const Logs = () => {
       default: return '🍽️';
     }
   };
+
+  const getFoodNames = (foodItemIds) => {
+    if (!foodItemIds || foodItemIds.length === 0) return 'No items tracked';
+    
+    const names = foodItemIds
+      .map(id => {
+        const item = inventoryItems.find(inv => inv.item_id === id);
+        return item ? item.item_name : null;
+      })
+      .filter(Boolean);
+    
+    return names.length > 0 ? names.join(', ') : 'Items not found';
+  };
+
+  // Calculate statistics from logs
+  const calculateStats = () => {
+    const totalDays = logs.length;
+    const totalCalories = logs.reduce((sum, log) => sum + log.totalCalories, 0);
+    const totalCost = logs.reduce((sum, log) => sum + log.totalCost, 0);
+    const totalWaste = logs.reduce((sum, log) => sum + log.totalWaste, 0);
+    
+    const avgCaloriesPerDay = totalDays > 0 ? Math.round(totalCalories / totalDays) : 0;
+    
+    // Calculate week-over-week changes (last 7 days vs previous 7 days)
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    
+    const lastWeekLogs = logs.filter(log => {
+      const logDate = new Date(log.date);
+      return logDate >= sevenDaysAgo && logDate <= now;
+    });
+    
+    const previousWeekLogs = logs.filter(log => {
+      const logDate = new Date(log.date);
+      return logDate >= fourteenDaysAgo && logDate < sevenDaysAgo;
+    });
+    
+    const lastWeekEntries = lastWeekLogs.length;
+    const previousWeekEntries = previousWeekLogs.length;
+    const entriesChange = lastWeekEntries - previousWeekEntries;
+    
+    const lastWeekCost = lastWeekLogs.reduce((sum, log) => sum + log.totalCost, 0);
+    const previousWeekCost = previousWeekLogs.reduce((sum, log) => sum + log.totalCost, 0);
+    const costChangePercent = previousWeekCost > 0 
+      ? Math.round(((lastWeekCost - previousWeekCost) / previousWeekCost) * 100) 
+      : 0;
+    
+    const lastWeekWaste = lastWeekLogs.reduce((sum, log) => sum + log.totalWaste, 0);
+    const previousWeekWaste = previousWeekLogs.reduce((sum, log) => sum + log.totalWaste, 0);
+    const wasteChangePercent = previousWeekWaste > 0 
+      ? Math.round(((lastWeekWaste - previousWeekWaste) / previousWeekWaste) * 100) 
+      : 0;
+    
+    return {
+      totalEntries: totalDays,
+      avgCaloriesPerDay,
+      totalCost: totalCost.toFixed(2),
+      totalWaste: totalWaste.toFixed(2),
+      entriesChange,
+      costChangePercent,
+      wasteChangePercent
+    };
+  };
+
+  const stats = calculateStats();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -238,8 +311,10 @@ const Logs = () => {
               <span className="text-slate-400">Total Entries</span>
               <FileText className="w-5 h-5 text-indigo-400" />
             </div>
-            <div className="text-2xl font-bold text-slate-200">{logs.length}</div>
-            <div className="text-sm text-green-400">+2 this week</div>
+            <div className="text-2xl font-bold text-slate-200">{stats.totalEntries}</div>
+            <div className={`text-sm ${stats.entriesChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {stats.entriesChange >= 0 ? '+' : ''}{stats.entriesChange} this week
+            </div>
           </div>
 
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
@@ -247,8 +322,8 @@ const Logs = () => {
               <span className="text-slate-400">Avg Calories/Day</span>
               <TrendingUp className="w-5 h-5 text-green-400" />
             </div>
-            <div className="text-2xl font-bold text-slate-200">1,220</div>
-            <div className="text-sm text-slate-400">Last 7 days</div>
+            <div className="text-2xl font-bold text-slate-200">{stats.avgCaloriesPerDay}</div>
+            <div className="text-sm text-slate-400">Last {stats.totalEntries} days</div>
           </div>
 
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
@@ -256,8 +331,10 @@ const Logs = () => {
               <span className="text-slate-400">Total Cost</span>
               <span className="text-lg">💰</span>
             </div>
-            <div className="text-2xl font-bold text-slate-200">$59.50</div>
-            <div className="text-sm text-orange-400">+15% from last week</div>
+            <div className="text-2xl font-bold text-slate-200">${stats.totalCost}</div>
+            <div className={`text-sm ${stats.costChangePercent > 0 ? 'text-orange-400' : stats.costChangePercent < 0 ? 'text-green-400' : 'text-slate-400'}`}>
+              {stats.costChangePercent > 0 ? '+' : ''}{stats.costChangePercent}% from last week
+            </div>
           </div>
 
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
@@ -265,8 +342,10 @@ const Logs = () => {
               <span className="text-slate-400">Food Waste</span>
               <span className="text-lg">♻️</span>
             </div>
-            <div className="text-2xl font-bold text-slate-200">0.30kg</div>
-            <div className="text-sm text-green-400">-20% reduction</div>
+            <div className="text-2xl font-bold text-slate-200">{stats.totalWaste}kg</div>
+            <div className={`text-sm ${stats.wasteChangePercent < 0 ? 'text-green-400' : stats.wasteChangePercent > 0 ? 'text-red-400' : 'text-slate-400'}`}>
+              {stats.wasteChangePercent > 0 ? '+' : ''}{stats.wasteChangePercent}% {stats.wasteChangePercent < 0 ? 'reduction' : 'from last week'}
+            </div>
           </div>
         </div>
 
@@ -320,6 +399,12 @@ const Logs = () => {
                     </div>
                     
                     <div className="space-y-3">
+                      {meal.food_items && meal.food_items.length > 0 && (
+                        <div className="pb-2 mb-2 border-b border-slate-600">
+                          <span className="text-slate-400 text-xs">Items:</span>
+                          <p className="text-slate-300 text-sm mt-1">{getFoodNames(meal.food_items)}</p>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between py-2">
                         <span className="text-slate-400 text-sm">Calories:</span>
                         <span className="text-slate-200 font-medium">{meal.calories} cal</span>
@@ -395,7 +480,7 @@ const Logs = () => {
                       >
                         <option value="">Select item</option>
                         {inventoryItems.map(item => (
-                          <option key={item.id} value={item.id}>
+                          <option key={item.item_id} value={item.item_id}>
                             {item.item_name}
                           </option>
                         ))}
@@ -403,7 +488,7 @@ const Logs = () => {
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1">Quantity ({inventoryItems.find(i => i.id === parseInt(selectedItem.item_id))?.unit || 'unit'})</label>
+                      <label className="block text-xs text-slate-400 mb-1">Quantity ({inventoryItems.find(i => i.item_id === parseInt(selectedItem.item_id))?.unit || 'unit'})</label>
                       <input
                         type="number"
                         step="0.1"
@@ -441,7 +526,7 @@ const Logs = () => {
                       {newLog.items.map((item, index) => (
                         <div key={index} className="flex items-center justify-between bg-slate-700/40 px-3 py-2 rounded">
                           <div className="text-sm text-slate-200">
-                            {item.item_name} - {item.quantity}kg - ${item.cost } - {item.waste}kg waste
+                            {item.item_name} - {item.quantity}kg - {Math.round(item.calories)} cal - ${item.cost.toFixed(2)} - {item.waste}kg waste
                           </div>
                           <button
                             onClick={() => handleRemoveItem(index)}
@@ -461,9 +546,9 @@ const Logs = () => {
                     <h3 className="text-sm font-medium text-slate-200 mb-3">Summary</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Total Calories (estimate):</span>
+                        <span className="text-slate-400">Total Calories:</span>
                         <span className="text-slate-200 font-medium">
-                          {newLog.items.reduce((sum, item) => sum + (item.quantity * 100), 0)} cal
+                          {Math.round(newLog.items.reduce((sum, item) => sum + item.calories, 0))} cal
                         </span>
                       </div>
                       <div className="flex justify-between">

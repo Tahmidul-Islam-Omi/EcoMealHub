@@ -4,7 +4,8 @@ import { analyzeFoodItemsFromText } from '../services/geminiService.js';
 
 export const getInventoryItems = async (req, res) => {
     try {
-        const userId = 1; //! need to change from auth middleware later
+        const userId = req.user.id; //! need to change from auth middleware later
+        // const userId = 1; //! need to change from auth middleware later
         const items = await inventoryService.getAllInventoryByUser(userId);
         res.json(items);
     } catch (error) {
@@ -14,7 +15,7 @@ export const getInventoryItems = async (req, res) => {
 
 export const updateInventoryItem = async (req, res) => {
     try {
-        const userId = 1; //! need to change from auth middleware later
+        const userId = req.user.id; //! need to change from auth middleware later
         const itemId = parseInt(req.params.item_id);
         const updateData = req.body.update_data;
         
@@ -30,7 +31,7 @@ export const updateInventoryItem = async (req, res) => {
 
 export const deleteInventoryItem = async (req, res) => {
     try {
-        const userId = 1; //! need to change from auth middleware later
+        const userId = req.user.id; //! need to change from auth middleware later
         const itemId = parseInt(req.params.item_id);
         console.log(itemId);
         

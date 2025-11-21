@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   User, 
   Mail, 
@@ -13,54 +13,104 @@ import {
   Ruler,
   Activity,
   Target,
-  TrendingUp
+  TrendingUp,
+  Users
 } from 'lucide-react';
 
+import { UserAPI } from '../services/api';
+
 const ProfilePage = () => {
-  const [user, setUser] = useState(() => {
-    // Initialize user data from localStorage with extended profile
-    const userData = localStorage.getItem('user');
-    const defaultUser = {
-      name: 'John Doe',
-      email: 'john@example.com',
-      height: 175, // cm
-      weight: 70, // kg
-      age: 30,
-      gender: 'male',
-      activityLevel: 'moderate',
-      budgetPreference: 50,
-      dietaryRestrictions: ['vegetarian'],
-      sustainabilityGoals: ['reduce-waste', 'local-sourcing']
-    };
-    
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      // Ensure all required fields exist with defaults
-      return {
-        ...defaultUser,
-        ...parsedUser,
-        dietaryRestrictions: parsedUser.dietaryRestrictions || [],
-        sustainabilityGoals: parsedUser.sustainabilityGoals || []
-      };
-    }
-    
-    return defaultUser;
+  const [user, setUser] = useState({
+    name: '',
+    email: '',
+    height: 175,
+    weight: 70,
+    age: 30,
+    gender: 'male',
+    activityLevel: 'moderate',
+    budgetPreference: 50,
+    dietaryRestrictions: [],
+    sustainabilityGoals: [],
+    location: '',
+    householdSize: 1,
+    userType: 'individual'
   });
+  
+  const [loading, setLoading] = useState(true);
   
   const [isEditing, setIsEditing] = useState(false);
   
   const [editData, setEditData] = useState({
-    name: user.name || '',
-    email: user.email || '',
-    height: user.height || 175,
-    weight: user.weight || 70,
-    age: user.age || 30,
-    gender: user.gender || 'male',
-    activityLevel: user.activityLevel || 'moderate',
-    budgetPreference: user.budgetPreference || 50,
-    dietaryRestrictions: user.dietaryRestrictions || [],
-    sustainabilityGoals: user.sustainabilityGoals || []
+    name: '',
+    email: '',
+    height: 175,
+    weight: 70,
+    age: 30,
+    gender: 'male',
+    activityLevel: 'moderate',
+    budgetPreference: 50,
+    dietaryRestrictions: [],
+    sustainabilityGoals: [],
+    location: '',
+    householdSize: 1
   });
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+      const userId = userInfo.id;
+      
+      if (!userId) {
+        console.error('User ID not found');
+        setLoading(false);
+        return;
+      }
+
+      const profileData = await UserAPI.getProfileById(userId);
+      
+      // Calculate age from created_at or set default
+      const age = 30; // You can calculate from birthdate if available
+      
+      // Map activity_level (0-4) to activity level names
+      const activityLevels = ['sedentary', 'light', 'moderate', 'active', 'very_active'];
+      const activityLevel = profileData.activity_level !== null && profileData.activity_level !== undefined
+        ? activityLevels[profileData.activity_level] 
+        : 'moderate';
+      
+      // Parse diet_preference as dietary restrictions if available
+      const dietaryRestrictions = profileData.diet_preference 
+        ? profileData.diet_preference.split(',').map(d => d.trim().toLowerCase())
+        : [];
+      
+      const userData = {
+        name: profileData.full_name || '',
+        email: profileData.email || '',
+        height: profileData.height || 175,
+        weight: profileData.weight || 70,
+        age: age,
+        gender: (profileData.gender || 'male').toLowerCase(),
+        activityLevel: activityLevel,
+        budgetPreference: parseFloat(profileData.weekly_budget) || 50,
+        dietaryRestrictions: dietaryRestrictions,
+        sustainabilityGoals: [],
+        location: profileData.location || '',
+        householdSize: profileData.household_size || 1,
+        userType: profileData.user_type || 'individual'
+      };
+      
+      setUser(userData);
+      setEditData(userData);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      setLoading(false);
+    }
+  };
 
   // Calculate BMI
   const calculateBMI = (weight, height) => {
@@ -111,27 +161,55 @@ const ProfilePage = () => {
         activityLevel: user.activityLevel || 'moderate',
         budgetPreference: user.budgetPreference || 50,
         dietaryRestrictions: user.dietaryRestrictions || [],
-        sustainabilityGoals: user.sustainabilityGoals || []
+        sustainabilityGoals: user.sustainabilityGoals || [],
+        location: user.location || '',
+        householdSize: user.householdSize || 1
       });
     }
     setIsEditing(!isEditing);
   };
 
-  const handleSave = () => {
-    const updatedUser = {
-      ...user,
-      ...editData
-    };
-    setUser(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+      const userId = userInfo.id;
+      
+      if (!userId) {
+        console.error('User ID not found');
+        return;
+      }
 
-    // TODO: Add API call to update user profile
-    // await fetch(`http://localhost:3000/api/users/${user.id}`, {
-    //   method: 'PUT',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(editData)
-    // });
+      // Map activity level back to numeric value (0-4)
+      const activityLevels = { sedentary: 0, light: 1, moderate: 2, active: 3, very_active: 4 };
+      const activityLevelNumeric = activityLevels[editData.activityLevel] || 2;
+      
+      // Prepare update payload matching backend allowed fields only
+      const updatePayload = {
+        household_size: parseInt(editData.householdSize),
+        location: editData.location,
+        weekly_budget: parseFloat(editData.budgetPreference),
+        height: parseInt(editData.height),
+        activity_level: activityLevelNumeric,
+        diet_preference: editData.dietaryRestrictions.length > 0 ? editData.dietaryRestrictions.join(', ') : null,
+        weight: parseInt(editData.weight),
+        gender: editData.gender.toUpperCase()
+      };
+
+      await UserAPI.updateProfileById(userId, updatePayload);
+      
+      const updatedUser = {
+        ...user,
+        ...editData
+      };
+      setUser(updatedUser);
+      setIsEditing(false);
+      
+      // Optionally refresh data from server
+      await fetchUserProfile();
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      alert('Failed to update profile. Please try again.');
+    }
   };
 
   const handleInputChange = (e) => {
@@ -160,6 +238,17 @@ const ProfilePage = () => {
   const currentBMI = calculateBMI(user.weight, user.height);
   const bmiInfo = getBMICategory(currentBMI);
   const dailyCalories = calculateDailyCalories();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -317,6 +406,46 @@ const ProfilePage = () => {
                     <div className="flex items-center gap-3 px-4 py-3 bg-slate-700/30 border border-slate-700 rounded-lg">
                       <User className="w-5 h-5 text-slate-500" />
                       <span className="text-slate-200 capitalize">{user.gender}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Location */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-200 mb-2">Location</label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="location"
+                      value={editData.location}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="City, Country"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-3 px-4 py-3 bg-slate-700/30 border border-slate-700 rounded-lg">
+                      <Target className="w-5 h-5 text-slate-500" />
+                      <span className="text-slate-200">{user.location || 'Not set'}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Household Size */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-200 mb-2">Household Size</label>
+                  {isEditing ? (
+                    <input
+                      type="number"
+                      name="householdSize"
+                      value={editData.householdSize}
+                      onChange={handleInputChange}
+                      min="1"
+                      className="w-full px-4 py-3 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-3 px-4 py-3 bg-slate-700/30 border border-slate-700 rounded-lg">
+                      <Users className="w-5 h-5 text-slate-500" />
+                      <span className="text-slate-200">{user.householdSize} {user.householdSize === 1 ? 'person' : 'people'}</span>
                     </div>
                   )}
                 </div>

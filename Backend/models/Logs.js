@@ -8,12 +8,13 @@ class Logs {
         return result;
     }
 
-    static async createLogEntry(user_id, meal_type, calory, waste, cost, log_date) {
+    static async createLogEntry(user_id, meal_type, calory, waste, cost, log_date, food_items){
+        const foodItemsArray = food_items.map(Number);
         const [newLog] = await db`
             INSERT INTO consumption_logs 
-                (user_id, meal_type, calory, waste, cost, log_date)
+                (user_id, meal_type, calory, waste, cost, log_date, food_items)
             VALUES 
-                (${user_id}, ${meal_type}, ${calory}, ${waste || 0}, ${cost}, ${log_date})
+                (${user_id}, ${meal_type}, ${calory}, ${waste || 0}, ${cost}, ${log_date}, ${foodItemsArray})
             RETURNING *;
         `;
         return newLog;

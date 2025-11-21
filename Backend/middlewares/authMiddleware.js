@@ -25,7 +25,7 @@ class AuthMiddleware {
 
             // Attach user info to request
             req.user = decoded;
-            console.log(decoded.email);
+            console.log(decoded.id);
             
 
             next();

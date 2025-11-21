@@ -15,8 +15,9 @@ export const getLogsByUserId = async (user_id)=>{
 
 export const createLogEntry = async (user_id, log_data) => {
     try {
-        const { meal_type, calory, waste, cost, log_date } = log_data;
-        const newLog = await Logs.createLogEntry(user_id, meal_type, calory, waste, cost, log_date);
+        console.log(log_data);
+        const { meal_type, calory, waste, cost, log_date, food_items } = log_data;
+        const newLog = await Logs.createLogEntry(user_id, meal_type, calory, waste, cost, log_date, food_items);
         return newLog;
     }
     catch (error) {
