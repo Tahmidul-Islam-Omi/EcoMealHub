@@ -66,5 +66,12 @@ const ResourceAPI = {
 };
 
 
+const LogAPI = {
+  getLogsByUserId: () => api.get('/logs'),
+  
+  createLogEntry: (logData) => api.post('/logs', logData)
+};
 
-export { InventoryAPI, ResourceAPI, API_BASE_URL };
+
+
+export { InventoryAPI, ResourceAPI, LogAPI, API_BASE_URL };

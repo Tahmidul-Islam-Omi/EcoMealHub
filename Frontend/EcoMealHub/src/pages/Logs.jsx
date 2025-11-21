@@ -12,6 +12,8 @@ import {
   X
 } from 'lucide-react';
 
+import { LogAPI } from '../services/api';
+
 const Logs = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('week');
@@ -20,7 +22,8 @@ const Logs = () => {
   const [inventoryItems, setInventoryItems] = useState([]);
   const [newLog, setNewLog] = useState({
     meal_type: 'breakfast',
-    items: []
+    items: [],
+    log_date: new Date().toISOString().split('T')[0]
   });
   const [selectedItem, setSelectedItem] = useState({
     item_id: '',
@@ -35,38 +38,57 @@ const Logs = () => {
   }, []);
 
   const fetchLogs = async () => {
-    // TODO: Replace with actual API call
-    // const response = await fetch('http://localhost:3000/api/v1/logs');
-    // const data = await response.json();
-    // setLogs(data);
-    
-    // Dummy data
-    setLogs([
-      {
-        id: 1,
-        date: '2024-11-20',
-        meals: [
-          { meal_type: 'breakfast', calories: 365, cost: 8.50, waste: 0.05, time: '08:00' },
-          { meal_type: 'lunch', calories: 560, cost: 12.00, waste: 0.10, time: '13:00' },
-          { meal_type: 'dinner', calories: 595, cost: 15.00, waste: 0.05, time: '19:30' }
-        ],
-        totalCalories: 1520,
-        totalCost: 35.50,
-        totalWaste: 0.20
-      },
-      {
-        id: 2,
-        date: '2024-11-19',
-        meals: [
-          { meal_type: 'breakfast', calories: 270, cost: 6.00, waste: 0.02, time: '08:30' },
-          { meal_type: 'lunch', calories: 400, cost: 10.00, waste: 0.05, time: '12:30' },
-          { meal_type: 'dinner', calories: 250, cost: 8.00, waste: 0.03, time: '20:00' }
-        ],
-        totalCalories: 920,
-        totalCost: 24.00,
-        totalWaste: 0.10
-      }
-    ]);
+    try {
+      const data = await LogAPI.getLogsByUserId();
+      console.log('Raw API data:', data);
+      
+      // Group logs by date
+      const groupedByDate = data.reduce((acc, log) => {
+        const date = new Date(log.log_date).toISOString().split('T')[0];
+        
+        if (!acc[date]) {
+          acc[date] = {
+            id: date,
+            date: date,
+            meals: [],
+            totalCalories: 0,
+            totalCost: 0,
+            totalWaste: 0
+          };
+        }
+        
+        const time = new Date(log.created_at).toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: false 
+        });
+        
+        acc[date].meals.push({
+          meal_type: log.meal_type,
+          calories: log.calory,
+          cost: log.cost,
+          waste: log.waste,
+          time: time
+        });
+        
+        acc[date].totalCalories += log.calory;
+        acc[date].totalCost += log.cost;
+        acc[date].totalWaste += log.waste;
+        
+        return acc;
+      }, {});
+      
+      // Convert to array and sort by date (newest first)
+      const logsArray = Object.values(groupedByDate).sort((a, b) => 
+        new Date(b.date) - new Date(a.date)
+      );
+      
+      console.log('Grouped logs:', logsArray);
+      setLogs(logsArray);
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+      setLogs([]);
+    }
   };
 
   const fetchInventory = async () => {
@@ -122,29 +144,19 @@ const Logs = () => {
       meal_type: newLog.meal_type,
       calory: totalCalories,
       cost: totalCost,
-      waste: totalWaste
+      waste: totalWaste,
+      log_date: newLog.log_date
     };
 
-    // TODO: Uncomment when backend is ready
-    // try {
-    //   const response = await fetch('http://localhost:3000/api/v1/logs', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(logData)
-    //   });
-    //   if (response.ok) {
-    //     fetchLogs();
-    //     setShowAddForm(false);
-    //     setNewLog({ meal_type: 'breakfast', items: [] });
-    //   }
-    // } catch (error) {
-    //   console.error('Error adding log:', error);
-    // }
-
-    // Dummy: Just add to local state for now
-    console.log('Submitting log:', logData);
-    setShowAddForm(false);
-    setNewLog({ meal_type: 'breakfast', items: [] });
+    try {
+      await LogAPI.createLogEntry(logData);
+      fetchLogs();
+      setShowAddForm(false);
+      setNewLog({ meal_type: 'breakfast', items: [], log_date: new Date().toISOString().split('T')[0] });
+    } catch (error) {
+      console.error('Error adding log:', error);
+      alert('Failed to add log entry. Please try again.');
+    }
   };
 
   const getMealTypeIcon = (type) => {
@@ -282,10 +294,10 @@ const Logs = () => {
                         {log.totalCalories} calories
                       </span>
                       <span className="text-slate-400 text-sm">
-                        ${log.totalCost.toFixed(2)}
+                        ${log.totalCost }
                       </span>
                       <span className="text-slate-400 text-sm">
-                        {log.totalWaste.toFixed(2)}kg waste
+                        {log.totalWaste }kg waste
                       </span>
                     </div>
                   </div>
@@ -314,11 +326,11 @@ const Logs = () => {
                       </div>
                       <div className="flex items-center justify-between py-2">
                         <span className="text-slate-400 text-sm">Cost:</span>
-                        <span className="text-slate-200 font-medium">${meal.cost.toFixed(2)}</span>
+                        <span className="text-slate-200 font-medium">${meal.cost }</span>
                       </div>
                       <div className="flex items-center justify-between py-2">
                         <span className="text-slate-400 text-sm">Waste:</span>
-                        <span className="text-slate-200 font-medium">{meal.waste.toFixed(2)}kg</span>
+                        <span className="text-slate-200 font-medium">{meal.waste }kg</span>
                       </div>
                     </div>
                   </div>
@@ -343,6 +355,17 @@ const Logs = () => {
               </div>
               
               <div className="space-y-6">
+                {/* Date */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">Date</label>
+                  <input
+                    type="date"
+                    value={newLog.log_date}
+                    onChange={(e) => setNewLog({...newLog, log_date: e.target.value})}
+                    className="w-full px-3 py-2 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
                 {/* Meal Type */}
                 <div>
                   <label className="block text-sm font-medium text-slate-200 mb-2">Meal Type</label>
@@ -418,7 +441,7 @@ const Logs = () => {
                       {newLog.items.map((item, index) => (
                         <div key={index} className="flex items-center justify-between bg-slate-700/40 px-3 py-2 rounded">
                           <div className="text-sm text-slate-200">
-                            {item.item_name} - {item.quantity}kg - ${item.cost.toFixed(2)} - {item.waste}kg waste
+                            {item.item_name} - {item.quantity}kg - ${item.cost } - {item.waste}kg waste
                           </div>
                           <button
                             onClick={() => handleRemoveItem(index)}
@@ -446,13 +469,13 @@ const Logs = () => {
                       <div className="flex justify-between">
                         <span className="text-slate-400">Total Cost:</span>
                         <span className="text-slate-200 font-medium">
-                          ${newLog.items.reduce((sum, item) => sum + item.cost, 0).toFixed(2)}
+                          ${newLog.items.reduce((sum, item) => sum + item.cost, 0) }
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Total Waste:</span>
                         <span className="text-slate-200 font-medium">
-                          {newLog.items.reduce((sum, item) => sum + item.waste, 0).toFixed(2)}kg
+                          {newLog.items.reduce((sum, item) => sum + item.waste, 0) }kg
                         </span>
                       </div>
                     </div>
@@ -464,7 +487,7 @@ const Logs = () => {
                 <button
                   onClick={() => {
                     setShowAddForm(false);
-                    setNewLog({ meal_type: 'breakfast', items: [] });
+                    setNewLog({ meal_type: 'breakfast', items: [], log_date: new Date().toISOString().split('T')[0] });
                   }}
                   className="px-4 py-2 text-slate-400 hover:text-slate-200 transition-colors"
                 >
