@@ -4,7 +4,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 40000, // 40 seconds timeout for AI processing
+  timeout: 60000, // 60 seconds timeout for AI processing
 });
 
 // Add request interceptor to include auth token and debug logging
@@ -50,7 +50,11 @@ const InventoryAPI = {
 
   getGlobalInventoryItems: () => api.get('/inventory/global'),
 
-  createGlobalInventoryItem: (itemData) => api.post('/inventory/global', itemData)
+  createGlobalInventoryItem: (itemData) => api.post('/inventory/global', itemData),
+
+  analyzeInventoryText: (text) => api.post('/inventory/text-analysis', { text }),
+
+  addOcrItems: (items) => api.post('/inventory/add-ocr-items', { items })
 };
 
 const ResourceAPI = {
