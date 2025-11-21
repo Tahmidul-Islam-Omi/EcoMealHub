@@ -8,6 +8,7 @@ import logRoutes from './logRoutes.js';
 import userRoutes from './userRoutes.js'
 import mealPlanRoutes from './mealPlanRoutes.js';
 import wasteEstimationRoutes from './wasteEstimationRoutes.js';
+import chatBotRoute from './chatBotRoutes.js';
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.use('/user', userRoutes);
 router.use('/meal-plans', mealPlanRoutes);
 router.use('/waste-estimation', wasteEstimationRoutes);
 
+router.use('/chat', chatBotRoute);
 
 export default router;

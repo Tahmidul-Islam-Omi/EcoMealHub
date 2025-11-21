@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { LogIn, Mail, Lock, Eye, EyeOff, Leaf } from 'lucide-react';
 import { API_BASE_URL } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const {t, i18n} = useTranslation();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -61,7 +64,7 @@ const LoginPage = () => {
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-slate-200 mb-2">
-                Email Address
+                {t('emailAddress')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 w-5 h-5" />
@@ -81,7 +84,7 @@ const LoginPage = () => {
             {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-slate-200 mb-2">
-                Password
+                {t('password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 w-5 h-5" />
@@ -126,7 +129,7 @@ const LoginPage = () => {
               ) : (
                 <>
                   <LogIn className="w-5 h-5" />
-                  Sign In
+                  {t('signIn')}
                 </>
               )}
             </button>
@@ -175,7 +178,7 @@ const LoginPage = () => {
               to="/forgot-password"
               className="text-sm text-green-400 hover:text-green-300 transition-colors"
             >
-              Forgot your password?
+              {t('forgotPassword')}
             </Link>
           </div>
         </div>
@@ -183,9 +186,9 @@ const LoginPage = () => {
         {/* Sign Up Link */}
         <div className="mt-6 text-center">
           <p className="text-slate-400">
-            Don't have an account?{' '}
+            {t('dontHaveAnAccount')}
             <Link to="/signup" className="text-green-400 hover:text-green-300 font-semibold transition-colors">
-              Sign up here
+              {t('signUpHere')}
             </Link>
           </p>
         </div>

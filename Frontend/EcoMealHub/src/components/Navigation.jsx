@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { LanguageDropdown } from './LanguageSwitcher';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -19,14 +21,16 @@ const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { t, i18n } = useTranslation();
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/logs', label: 'Logs', icon: FileText },
-    { path: '/inventory', label: 'Inventory', icon: Package },
-    { path: '/recipes', label: 'Recipes', icon: ChefHat },
-    { path: '/meal-planning', label: 'Meal Planning', icon: Calendar },
-    { path: '/resources', label: 'Resources', icon: BookOpen },
+    { path: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
+    { path: '/logs', label: t('logs'), icon: FileText },
+    { path: '/inventory', label: t('inventory'), icon: Package },
+    { path: '/recipes', label: t('recipes'), icon: ChefHat },
+    { path: '/meal-planning', label: t('mealPlanning'), icon: Calendar },
+    { path: '/resources', label: t('resources'), icon: BookOpen },
+    { path: '/chatbot', label: t('chatbot'), icon: Leaf },
   ];
 
   const handleLogout = () => {
@@ -67,10 +71,13 @@ const Navigation = () => {
                 );
               })}
             </div>
-            
+
             <div className="h-6 w-px bg-slate-700"></div>
-            
+
             <div className="flex items-center gap-4">
+              {/* Language Switcher */}
+              < LanguageDropdown />
+
               {/* Profile with username */}
               <Link
                 to="/profile"
@@ -81,16 +88,16 @@ const Navigation = () => {
                 }`}
               >
                 <User className="w-4 h-4" />
-                {user?.name || 'Profile'}
+                {user?.name || t('profile')}
               </Link>
-              
+
               {/* Logout */}
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
+                {t('logout')}
               </button>
             </div>
           </div>
@@ -126,7 +133,7 @@ const Navigation = () => {
                   </Link>
                 );
               })}
-              
+
               {/* Mobile Profile */}
               <Link
                 to="/profile"
@@ -138,17 +145,20 @@ const Navigation = () => {
                 }`}
               >
                 <User className="w-5 h-5" />
-                {user?.name || 'Profile'}
+                {user?.name || t('profile')}
               </Link>
-              
+
               {/* Mobile Logout */}
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-3 px-3 py-3 rounded-lg transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 text-left"
               >
                 <LogOut className="w-5 h-5" />
-                Logout
+                {t('logout')}
               </button>
+
+              {/* Mobile Language Switcher */}
+              < LanguageDropdown />
             </div>
           </div>
         )}

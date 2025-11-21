@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   FileText,
   Search,
@@ -15,6 +16,7 @@ import {
 import { LogAPI, InventoryAPI } from '../services/api';
 
 const Logs = () => {
+  const {t, i18n} = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('week');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -251,8 +253,8 @@ const Logs = () => {
             <div className="flex items-center gap-3">
               <FileText className="w-8 h-8 text-indigo-400" />
               <div>
-                <h1 className="text-3xl font-bold text-slate-200">Consumption Logs</h1>
-                <p className="text-slate-400">Track and analyze your food consumption history</p>
+                <h1 className="text-3xl font-bold text-slate-200">{t('Consumption Logs')}</h1>
+                <p className="text-slate-400">{t('Track and analyze your food consumption history')}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -261,11 +263,11 @@ const Logs = () => {
                 className="flex items-center gap-2 bg-indigo-500/20 text-indigo-300 px-4 py-2 rounded-lg border border-indigo-500/30 hover:bg-indigo-500/30 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                Add Entry
+                {t('Add Entry')}
               </button>
               <button className="flex items-center gap-2 bg-slate-700/60 text-slate-300 px-4 py-2 rounded-lg border border-slate-600 hover:bg-slate-700 transition-colors">
                 <Download className="w-4 h-4" />
-                Export
+                {t('Export')}
               </button>
             </div>
           </div>
@@ -295,10 +297,10 @@ const Logs = () => {
                 onChange={(e) => setSelectedPeriod(e.target.value)}
                 className="bg-slate-700/60 border border-slate-600 rounded-lg px-4 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="day">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="year">This Year</option>
+                <option value="day">{t('Today')}</option>
+                <option value="week">{t('This Week')}</option>
+                <option value="month">{t('This Month')}</option>
+                <option value="year">{t('This Year')}</option>
               </select>
             </div>
           </div>
@@ -308,7 +310,7 @@ const Logs = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-400">Total Entries</span>
+              <span className="text-slate-400">{t('Total Entries')}</span>
               <FileText className="w-5 h-5 text-indigo-400" />
             </div>
             <div className="text-2xl font-bold text-slate-200">{stats.totalEntries}</div>
@@ -319,7 +321,7 @@ const Logs = () => {
 
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-400">Avg Calories/Day</span>
+              <span className="text-slate-400">{t('Avg Calories/Day')}</span>
               <TrendingUp className="w-5 h-5 text-green-400" />
             </div>
             <div className="text-2xl font-bold text-slate-200">{stats.avgCaloriesPerDay}</div>
@@ -328,7 +330,7 @@ const Logs = () => {
 
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-400">Total Cost</span>
+              <span className="text-slate-400">{t('Total Cost')}</span>
               <span className="text-lg">💰</span>
             </div>
             <div className="text-2xl font-bold text-slate-200">${stats.totalCost}</div>
@@ -339,7 +341,7 @@ const Logs = () => {
 
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-400">Food Waste</span>
+              <span className="text-slate-400">{t('Food Waste')}</span>
               <span className="text-lg">♻️</span>
             </div>
             <div className="text-2xl font-bold text-slate-200">{stats.totalWaste}kg</div>
@@ -370,19 +372,18 @@ const Logs = () => {
                     </h3>
                     <div className="flex items-center gap-4 mt-1">
                       <span className="text-slate-400 text-sm">
-                        {log.totalCalories} calories
+                        {log.totalCalories} {t('calories')}
                       </span>
                       <span className="text-slate-400 text-sm">
                         ${log.totalCost }
                       </span>
                       <span className="text-slate-400 text-sm">
-                        {log.totalWaste }kg waste
+                        {log.totalWaste }{t("kg waste")}
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
-
               {/* Meals */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {log.meals.map((meal, mealIndex) => (
@@ -593,7 +594,7 @@ const Logs = () => {
         {/* Load More */}
         <div className="text-center mt-8">
           <button className="bg-slate-700/60 hover:bg-slate-700 text-slate-200 px-6 py-3 rounded-lg border border-slate-600 transition-colors">
-            Load More Entries
+            {t('Load More Entries')}
           </button>
         </div>
       </div>

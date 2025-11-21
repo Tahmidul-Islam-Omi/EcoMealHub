@@ -9,8 +9,11 @@ import {
   ArrowRight,
   ChevronDown
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const HomePage = () => {
+  const {t, i18n} = useTranslation();
+
   const features = [
     {
       icon: BookOpen,
@@ -59,11 +62,10 @@ const HomePage = () => {
               </h1>
             </div>
             <p className="text-xl md:text-2xl text-slate-300 mb-8 leading-relaxed">
-              Your gateway to sustainable eating and reducing food waste
+              {t('motto1')}
             </p>
             <p className="text-lg text-slate-400 mb-12 max-w-2xl mx-auto">
-              Join our community of eco-conscious individuals working together to create a more sustainable food system. 
-              Discover resources, share knowledge, and make a positive impact on our planet.
+              {t('motto2')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -71,7 +73,7 @@ const HomePage = () => {
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-indigo-500 text-white px-8 py-4 rounded-xl font-semibold hover:from-green-600 hover:to-indigo-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               >
                 <BookOpen className="w-5 h-5" />
-                Explore Resources
+                {t('exploreResources')}
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
@@ -79,7 +81,7 @@ const HomePage = () => {
                 className="inline-flex items-center gap-2 bg-slate-800/60 border border-slate-600 text-slate-200 px-8 py-4 rounded-xl font-semibold hover:bg-slate-700 transition-all hover:border-slate-500"
               >
                 <PlusCircle className="w-5 h-5" />
-                Share Knowledge
+                {t('shareKnowledge')}
               </Link>
             </div>
           </div>
@@ -93,7 +95,7 @@ const HomePage = () => {
       <section className="py-16 bg-slate-800/30">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-slate-200 mb-12">
-            The Global Food Waste Crisis
+            {t('The Global Food Waste Crisis')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -111,10 +113,10 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-slate-200 mb-4">
-              How EcoMealHub Helps
+              {t('How EcoMealHub Helps')}
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-              Our platform provides tools and resources to help you make sustainable choices and reduce food waste in your daily life.
+              {t('Our platform provides tools and resources to help you make sustainable choices and reduce food waste in your daily life.')}
             </p>
           </div>
           
@@ -139,7 +141,7 @@ const HomePage = () => {
                         {feature.description}
                       </p>
                       <div className="flex items-center gap-2 mt-4 text-green-400 font-medium group-hover:text-green-300 transition-colors">
-                        Learn more
+                        {t('Learn more')}
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
@@ -156,25 +158,25 @@ const HomePage = () => {
         <div className="max-w-4xl mx-auto px-4 text-center">
           <Users className="w-16 h-16 text-green-400 mx-auto mb-6" />
           <h2 className="text-3xl font-bold text-slate-200 mb-4">
-            Join Our Community
+            {t('Join Our Community')}
           </h2>
           <p className="text-lg text-slate-400 mb-8">
-            Be part of a growing movement towards sustainable eating and reduced food waste. 
-            Together, we can make a difference for our planet.
+            {t('Be part of a growing movement towards sustainable eating and reduced food waste.')} 
+            {t('Together, we can make a difference for our planet.')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/signup"
               className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-indigo-500 text-white px-8 py-4 rounded-xl font-semibold hover:from-green-600 hover:to-indigo-600 transition-all shadow-lg"
             >
-              Get Started
+              {t('getStarted')}
               <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
               to="/resources"
               className="inline-flex items-center gap-2 text-slate-200 px-8 py-4 rounded-xl font-semibold hover:text-green-400 transition-colors"
             >
-              Browse Resources
+              {t('browseResources')}
             </Link>
           </div>
         </div>

@@ -69,6 +69,9 @@ const ResourceAPI = {
   deleteResource: (resourceId) => api.delete(`/resources/${resourceId}`)
 };
 
+const ChatBotAPI = { 
+  chatbotItem: (memory, messages) => api.post('/chat', { memory, messages }),
+};
 
 const LogAPI = {
   getLogsByUserId: () => api.get('/logs'),
@@ -92,4 +95,4 @@ const UserAPI ={
 }
 
 
-export { InventoryAPI, ResourceAPI, LogAPI,MealPlanAPI, UserAPI, API_BASE_URL };
+export { InventoryAPI, ResourceAPI, LogAPI,MealPlanAPI,ChatBotAPI, UserAPI, API_BASE_URL };
