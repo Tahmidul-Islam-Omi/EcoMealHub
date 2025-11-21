@@ -17,5 +17,10 @@ router.get('/global', AuthMiddleware.authenticate, InventoryController.getGlobal
 
 router.post('/global', InventoryController.createGlobalInventoryItem);
 
+router.post('/text-analysis', AuthMiddleware.authenticate, InventoryController.analyzeTextForFoodItems);
+
+router.post('/add-ocr-items', AuthMiddleware.authenticate, InventoryController.addOcrItemsToInventory);
+
+// router.get('/test-models', InventoryController.testGeminiModels);
 
 export default router;

@@ -17,8 +17,14 @@ import {
   Clock,
   Image as ImageIcon,
   ChevronDown,
-  ArrowLeft
+  ArrowLeft,
+  FileText,
+  Loader2,
+  Check,
+  Eye
 } from 'lucide-react';
+
+import Tesseract from 'tesseract.js';
 
 import { InventoryAPI } from '../services/api';
 
@@ -31,6 +37,15 @@ const Inventory = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [showNewItemForm, setShowNewItemForm] = useState(false);
+  
+  // OCR states
+  const [showOcrModal, setShowOcrModal] = useState(false);
+  const [ocrImage, setOcrImage] = useState(null);
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [extractedItems, setExtractedItems] = useState([]);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedOcrItems, setSelectedOcrItems] = useState([]);
   
   // Global items state
   const [globalItems, setGlobalItems] = useState([]);
@@ -132,7 +147,8 @@ const Inventory = () => {
         item_id: selectedGlobalItem.id,
         quantity: parseFloat(newItem.quantity),
         unit: newItem.unit,
-        custom_cost: newItem.custom_cost ? parseFloat(newItem.custom_cost) : null
+        custom_cost: newItem.custom_cost ? parseFloat(newItem.custom_cost) : null,
+        expiration_day: newItem.expiration_day ? parseFloat(newItem.expiration_day) : null
       };
       
       await InventoryAPI.createInventoryItem(inventoryData);
@@ -245,6 +261,118 @@ const Inventory = () => {
     return { label: `${expirationDays} day${expirationDays !== 1 ? 's' : ''} left`, color: 'green', icon: Clock };
   };
 
+  // OCR functionality
+  const handleOcrImageUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      if (file.size <= 10 * 1024 * 1024) { // 10MB limit
+        setOcrImage(file);
+      } else {
+        alert('File size must be less than 10MB');
+      }
+    } else {
+      alert('Please select a valid image file');
+    }
+  };
+
+  const processOcrImage = async () => {
+    if (!ocrImage) return;
+
+    try {
+      setOcrLoading(true);
+      setOcrProgress(0);
+
+      // Extract text using Tesseract.js
+      const { data: { text } } = await Tesseract.recognize(
+        ocrImage,
+        'eng',
+        {
+          logger: m => {
+            if (m.status === 'recognizing text') {
+              setOcrProgress(Math.round(m.progress * 50)); // First 50% for OCR
+            }
+          }
+        }
+      );
+
+      console.log('Extracted Text:', text);
+
+      setOcrProgress(60);
+
+      // Send extracted text to backend for analysis
+      const analysisResult = await InventoryAPI.analyzeInventoryText(text);
+
+      console.log('Analysis Result:', analysisResult);
+
+      setOcrProgress(80);
+      
+      if (analysisResult.success && analysisResult.data) {
+        setExtractedItems(analysisResult.data);
+        setSelectedOcrItems(analysisResult.data.map((_, index) => index)); // Select all by default
+        setOcrProgress(100);
+        
+        setTimeout(() => {
+          setShowOcrModal(false);
+          setShowConfirmModal(true);
+          setOcrLoading(false);
+          setOcrProgress(0);
+        }, 500);
+      } else {
+        throw new Error(analysisResult.message || 'No items found in the text');
+      }
+
+    } catch (error) {
+      console.error('OCR processing error:', error);
+      alert(`OCR processing failed: ${error.message}`);
+      setOcrLoading(false);
+      setOcrProgress(0);
+    }
+  };
+
+  const handleAddOcrItems = async () => {
+    try {
+      const selectedItems = extractedItems.filter((_, index) => 
+        selectedOcrItems.includes(index)
+      );
+
+      if (selectedItems.length === 0) {
+        alert('Please select at least one item to add');
+        return;
+      }
+
+      const result = await InventoryAPI.addOcrItems(selectedItems);
+      
+      if (result.success) {
+        // Refresh inventory
+        const data = await InventoryAPI.getInventory(1);
+        const inventoryArray = Array.isArray(data) ? data : data.data || data.inventory || [];
+        setItems(inventoryArray);
+        
+        // Reset states
+        setShowConfirmModal(false);
+        setExtractedItems([]);
+        setSelectedOcrItems([]);
+        setOcrImage(null);
+        
+        alert(`Successfully added ${selectedItems.length} items to your inventory!`);
+      } else {
+        throw new Error(result.message || 'Failed to add items');
+      }
+
+    } catch (error) {
+      console.error('Error adding OCR items:', error);
+      alert(`Failed to add items: ${error.message}`);
+    }
+  };
+
+  const toggleOcrItemSelection = (index) => {
+    setSelectedOcrItems(prev => 
+      prev.includes(index) 
+        ? prev.filter(i => i !== index)
+        : [...prev, index]
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -307,13 +435,22 @@ const Inventory = () => {
                 Track your food items and monitor expiration dates
               </p>
             </div>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-indigo-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-indigo-600 transition-all shadow-lg"
-            >
-              <Plus className="w-5 h-5" />
-              Add Item
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowOcrModal(true)}
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg"
+              >
+                <FileText className="w-5 h-5" />
+                Upload Receipt
+              </button>
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-indigo-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-indigo-600 transition-all shadow-lg"
+              >
+                <Plus className="w-5 h-5" />
+                Add Item
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -772,6 +909,211 @@ const Inventory = () => {
               >
                 Submit for Approval
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* OCR Upload Modal */}
+      {showOcrModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-slate-200">Upload Food Receipt</h2>
+              <button
+                onClick={() => {
+                  setShowOcrModal(false);
+                  setOcrImage(null);
+                  setOcrLoading(false);
+                  setOcrProgress(0);
+                }}
+                className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {!ocrImage ? (
+                <div>
+                  <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer hover:border-slate-500 transition-colors">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <FileText className="w-12 h-12 text-slate-500 mb-4" />
+                      <p className="mb-2 text-sm text-slate-400">
+                        <span className="font-medium">Click to upload receipt</span> or drag and drop
+                      </p>
+                      <p className="text-xs text-slate-500">PNG, JPG, WebP (MAX. 10MB)</p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleOcrImageUpload}
+                    />
+                  </label>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="relative">
+                    <img 
+                      src={URL.createObjectURL(ocrImage)} 
+                      alt="Receipt preview" 
+                      className="w-full h-64 object-contain rounded-lg border border-slate-600 bg-slate-900"
+                    />
+                    {!ocrLoading && (
+                      <button
+                        onClick={() => setOcrImage(null)}
+                        className="absolute top-2 right-2 p-1 bg-red-500/80 text-white rounded-full hover:bg-red-500 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {ocrLoading && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+                        <span className="text-slate-300">Processing receipt...</span>
+                      </div>
+                      <div className="w-full bg-slate-700 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${ocrProgress}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-xs text-slate-400">
+                        {ocrProgress < 50 ? 'Extracting text from image...' : 
+                         ocrProgress < 80 ? 'Analyzing food items...' : 
+                         'Almost done...'}
+                      </p>
+                    </div>
+                  )}
+
+                  {!ocrLoading && (
+                    <button
+                      onClick={processOcrImage}
+                      className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all"
+                    >
+                      Process Receipt
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* OCR Items Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-slate-200">Confirm Items to Add</h2>
+              <button
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  setExtractedItems([]);
+                  setSelectedOcrItems([]);
+                  setOcrImage(null);
+                }}
+                className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="mb-4 p-3 bg-slate-700/50 rounded-lg">
+              <p className="text-sm text-slate-300">
+                Found {extractedItems.length} items. Select the ones you want to add to your inventory:
+              </p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-3 mb-6">
+              {extractedItems.map((item, index) => (
+                <div 
+                  key={index}
+                  className={`p-4 rounded-lg border transition-all cursor-pointer ${
+                    selectedOcrItems.includes(index)
+                      ? 'border-purple-500 bg-purple-500/10'
+                      : 'border-slate-600 bg-slate-700/30 hover:border-slate-500'
+                  }`}
+                  onClick={() => toggleOcrItemSelection(index)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                          selectedOcrItems.includes(index)
+                            ? 'border-purple-500 bg-purple-500'
+                            : 'border-slate-500'
+                        }`}>
+                          {selectedOcrItems.includes(index) && (
+                            <Check className="w-3 h-3 text-white" />
+                          )}
+                        </div>
+                        <h3 className="font-medium text-slate-200">
+                          {item.item_name || 'Unknown Item'}
+                        </h3>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-slate-400">Quantity:</span>
+                          <span className="text-slate-300 ml-2">
+                            {item.quantity || 'N/A'} {item.unit || ''}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400">Cost:</span>
+                          <span className="text-slate-300 ml-2">
+                            {item.cost ? `$${item.cost}` : 'N/A'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400">Category:</span>
+                          <span className="text-slate-300 ml-2">
+                            {item.category || 'N/A'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400">Expiry:</span>
+                          <span className="text-slate-300 ml-2">
+                            {item.expiration_date ? new Date(item.expiration_date).toLocaleDateString() : 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-slate-700">
+              <p className="text-sm text-slate-400">
+                {selectedOcrItems.length} of {extractedItems.length} items selected
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowConfirmModal(false);
+                    setExtractedItems([]);
+                    setSelectedOcrItems([]);
+                    setOcrImage(null);
+                  }}
+                  className="px-4 py-2 text-slate-400 hover:text-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddOcrItems}
+                  disabled={selectedOcrItems.length === 0}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Add Selected Items
+                </button>
+              </div>
             </div>
           </div>
         </div>
