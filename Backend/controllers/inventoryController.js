@@ -71,9 +71,13 @@ export const getGlobalInventoryItems = async (req, res) => {
 
 export const createGlobalInventoryItem = async (req, res) => {
     try {
-        const { item_name, category, expiration_days, cost, image_url } = req.body;
+                const { item_name, category, expiration_days, cost, image } = req.body;
+        // console.log(image);
+        
+        
+
         const item = {
-            item_name, category, expiration_days, cost, image_url
+            item_name, category, expiration_days, cost, image_url: "abc"
         }
         
         const newItem = await inventoryService.createGlobalInventoryItem(item);

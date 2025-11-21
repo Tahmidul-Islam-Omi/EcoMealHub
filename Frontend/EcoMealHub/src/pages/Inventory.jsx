@@ -162,8 +162,15 @@ const Inventory = () => {
       if (newGlobalItem.image) {
         formData.append('image', newGlobalItem.image);
       }
+      console.log(formData);
       
-      await InventoryAPI.createGlobalInventoryItem(formData);
+      const response = await InventoryAPI.createGlobalInventoryItem(newGlobalItem);
+      console.log(response);
+
+      const data = await InventoryAPI.getGlobalInventoryItems();
+      const globalItemsArray = Array.isArray(data) ? data : data.data || [];
+      setGlobalItems(globalItemsArray);
+      
       
       // Reset form
       setNewGlobalItem({
@@ -653,7 +660,10 @@ const Inventory = () => {
                 <input
                   type="text"
                   value={newGlobalItem.item_name}
-                  onChange={(e) => setNewGlobalItem({...newGlobalItem, item_name: e.target.value})}
+                  onChange={(e) => {
+
+                    setNewGlobalItem({...newGlobalItem, item_name: e.target.value})                    
+                  }}
                   className="w-full px-3 py-2 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Enter item name"
                 />
