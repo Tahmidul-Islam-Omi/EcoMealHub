@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   LayoutDashboard,
   TrendingUp,
@@ -34,29 +35,30 @@ import {
 const Dashboard = () => {
   // Sample data for charts
   const [timeRange, setTimeRange] = useState('week');
-  
+  const {t, i18n} = useTranslation();
+
   const consumptionData = [
-    { name: 'Mon', calories: 2200, cost: 25 },
-    { name: 'Tue', calories: 2400, cost: 30 },
-    { name: 'Wed', calories: 2100, cost: 22 },
-    { name: 'Thu', calories: 2300, cost: 28 },
-    { name: 'Fri', calories: 2500, cost: 35 },
-    { name: 'Sat', calories: 2600, cost: 40 },
-    { name: 'Sun', calories: 2200, cost: 26 },
+    { name: t('Mon'), calories: 2200, cost: 25 },
+    { name: t('Tue'), calories: 2400, cost: 30 },
+    { name: t('Wed'), calories: 2100, cost: 22 },
+    { name: t('Thu'), calories: 2300, cost: 28 },
+    { name: t('Fri'), calories: 2500, cost: 35 },
+    { name: t('Sat'), calories: 2600, cost: 40 },
+    { name: t('Sun'), calories: 2200, cost: 26 },
   ];
 
   const categoryData = [
-    { name: 'Vegetables', value: 35, color: '#10b981' },
-    { name: 'Grains', value: 25, color: '#f59e0b' },
-    { name: 'Proteins', value: 20, color: '#ef4444' },
-    { name: 'Dairy', value: 15, color: '#3b82f6' },
-    { name: 'Others', value: 5, color: '#8b5cf6' },
+    { name: t('Vegetables'), value: 35, color: '#10b981' },
+    { name: t('Grains'), value: 25, color: '#f59e0b' },
+    { name: t('Proteins'), value: 20, color: '#ef4444' },
+    { name: t('Dairy'), value: 15, color: '#3b82f6' },
+    { name: t('Others'), value: 5, color: '#8b5cf6' },
   ];
 
   const inventoryAlerts = [
-    { item: 'Tomatoes', status: 'expiring', days: 2, type: 'warning' },
-    { item: 'Milk', status: 'low stock', quantity: '1 bottle', type: 'info' },
-    { item: 'Bread', status: 'expired', days: -1, type: 'error' },
+    { item: t('Tomatoes'), status: 'expiring', days: 2, type: 'warning' },
+    { item: t('Milk'), status: 'low stock', quantity: '1 bottle', type: 'info' },
+    { item: t('Bread'), status: 'expired', days: -1, type: 'error' },
   ];
 
   const recommendations = [
@@ -92,7 +94,7 @@ const Dashboard = () => {
                 <h1 className="text-3xl font-bold text-slate-200">Dashboard</h1>
               </div>
               <p className="text-slate-400">
-                Welcome back! Here's your food consumption and sustainability overview
+                {t("Welcome back! Here's your food consumption and sustainability overview")}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -101,9 +103,9 @@ const Dashboard = () => {
                 onChange={(e) => setTimeRange(e.target.value)}
                 className="bg-slate-800/60 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="year">This Year</option>
+                <option value="week">{t('This Week')}</option>
+                <option value="month">{t('This Month')}</option>
+                <option value="year">{t('This Year')}</option>
               </select>
             </div>
           </div>
@@ -121,7 +123,7 @@ const Dashboard = () => {
               <span className="text-sm text-green-400 font-medium">+5.2%</span>
             </div>
             <h3 className="text-2xl font-bold text-slate-200 mb-1">2,340</h3>
-            <p className="text-slate-400 text-sm">Daily Calories</p>
+            <p className="text-slate-400 text-sm">{t('Daily Calories')}</p>
           </div>
 
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
@@ -132,7 +134,7 @@ const Dashboard = () => {
               <span className="text-sm text-red-400 font-medium">+15%</span>
             </div>
             <h3 className="text-2xl font-bold text-slate-200 mb-1">$186</h3>
-            <p className="text-slate-400 text-sm">Weekly Spending</p>
+            <p className="text-slate-400 text-sm">{t('Weekly Spending')}</p>
           </div>
 
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
@@ -143,7 +145,7 @@ const Dashboard = () => {
               <span className="text-sm text-slate-400 font-medium">42 items</span>
             </div>
             <h3 className="text-2xl font-bold text-slate-200 mb-1">89%</h3>
-            <p className="text-slate-400 text-sm">Inventory Health</p>
+            <p className="text-slate-400 text-sm">{t('Inventory Health')}</p>
           </div>
 
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
@@ -154,7 +156,7 @@ const Dashboard = () => {
               <span className="text-sm text-orange-400 font-medium">On track</span>
             </div>
             <h3 className="text-2xl font-bold text-slate-200 mb-1">78%</h3>
-            <p className="text-slate-400 text-sm">Sustainability Goal</p>
+            <p className="text-slate-400 text-sm">{t('Sustainability Goal')}</p>
           </div>
         </div>
 
@@ -162,15 +164,15 @@ const Dashboard = () => {
           {/* Consumption Trend */}
           <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-slate-200">Consumption Trends</h2>
+              <h2 className="text-xl font-semibold text-slate-200">{t('Consumption Trends')}</h2>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <span className="text-sm text-slate-400">Calories</span>
+                  <span className="text-sm text-slate-400">{t('Calories')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-slate-400">Cost ($)</span>
+                  <span className="text-sm text-slate-400">{t('Cost')} ($)</span>
                 </div>
               </div>
             </div>
@@ -259,10 +261,10 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-slate-200 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-orange-400" />
-                Inventory Alerts
+                {t('Inventory Alerts')}
               </h2>
               <button className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
-                View All
+                {t('View All')}
               </button>
             </div>
             <div className="space-y-4">
@@ -283,7 +285,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <button className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
-                    Action
+                    {t('Action')}
                   </button>
                 </div>
               ))}
@@ -295,7 +297,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-slate-200 flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-yellow-400" />
-                Recommendations
+                {t('Recommendations')}
               </h2>
             </div>
             <div className="space-y-4">
@@ -323,23 +325,23 @@ const Dashboard = () => {
 
         {/* Quick Actions */}
         <div className="mt-8 bg-slate-800/60 border border-slate-700 rounded-xl p-6">
-          <h2 className="text-xl font-semibold text-slate-200 mb-6">Quick Actions</h2>
+          <h2 className="text-xl font-semibold text-slate-200 mb-6">{t('Quick Actions')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <button className="flex items-center gap-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition-colors">
               <Calendar className="w-5 h-5 text-blue-400" />
-              <span className="text-slate-200">Log Today's Meal</span>
+              <span className="text-slate-200">{t("Log Today's Meal")}</span>
             </button>
             <button className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/20 rounded-lg hover:bg-green-500/20 transition-colors">
               <Package className="w-5 h-5 text-green-400" />
-              <span className="text-slate-200">Update Inventory</span>
+              <span className="text-slate-200">{t('Update Inventory')}</span>
             </button>
             <button className="flex items-center gap-3 p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg hover:bg-purple-500/20 transition-colors">
               <Clock className="w-5 h-5 text-purple-400" />
-              <span className="text-slate-200">Upload Receipt</span>
+              <span className="text-slate-200">{t('Upload Receipt')}</span>
             </button>
             <button className="flex items-center gap-3 p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg hover:bg-orange-500/20 transition-colors">
               <Award className="w-5 h-5 text-orange-400" />
-              <span className="text-slate-200">View Goals</span>
+              <span className="text-slate-200">{t('View Goals')}</span>
             </button>
           </div>
         </div>

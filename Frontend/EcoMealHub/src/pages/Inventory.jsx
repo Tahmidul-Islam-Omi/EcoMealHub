@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   Package, 
   Plus, 
@@ -32,6 +33,7 @@ const Inventory = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [showNewItemForm, setShowNewItemForm] = useState(false);
   
+  const {t, i18n} = useTranslation();
   // Global items state
   const [globalItems, setGlobalItems] = useState([]);
   const [globalItemsLoading, setGlobalItemsLoading] = useState(false);
@@ -245,15 +247,15 @@ const Inventory = () => {
           <div className="max-w-7xl mx-auto px-4 py-12">
             <div className="flex items-center gap-3 mb-4">
               <Package className="w-10 h-10 text-green-400" />
-              <h1 className="text-4xl font-bold text-slate-200">Food Inventory</h1>
+              <h1 className="text-4xl font-bold text-slate-200">{t('Food Inventory')}</h1>
             </div>
           </div>
         </header>
         <main className="max-w-7xl mx-auto px-4 py-12">
           <div className="text-center py-20">
             <Package className="w-16 h-16 text-slate-600 mx-auto mb-4 animate-pulse" />
-            <h3 className="text-xl font-semibold text-slate-300 mb-2">Loading inventory...</h3>
-            <p className="text-slate-500">Please wait while we fetch your items</p>
+            <h3 className="text-xl font-semibold text-slate-300 mb-2">{t('Loading inventory')}...</h3>
+            <p className="text-slate-500">{t('Please wait while we fetch your items')}</p>
           </div>
         </main>
       </div>
@@ -267,17 +269,17 @@ const Inventory = () => {
           <div className="max-w-7xl mx-auto px-4 py-12">
             <div className="flex items-center gap-3 mb-4">
               <Package className="w-10 h-10 text-green-400" />
-              <h1 className="text-4xl font-bold text-slate-200">Food Inventory</h1>
+              <h1 className="text-4xl font-bold text-slate-200">{t('Food Inventory')}</h1>
             </div>
           </div>
         </header>
         <main className="max-w-7xl mx-auto px-4 py-12">
           <div className="text-center py-20">
             <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-slate-300 mb-2">Error loading inventory</h3>
+            <h3 className="text-xl font-semibold text-slate-300 mb-2">{t('Error loading inventory')}</h3>
             <p className="text-slate-500 mb-5">{error}</p>
             <button onClick={() => window.location.reload()} className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors hover:underline">
-              Try again
+              {t('Try again')}
             </button>
           </div>
         </main>
@@ -294,10 +296,10 @@ const Inventory = () => {
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <Package className="w-10 h-10 text-green-400" />
-                <h1 className="text-4xl font-bold text-slate-200">Food Inventory</h1>
+                <h1 className="text-4xl font-bold text-slate-200">{t('Food Inventory')}</h1>
               </div>
               <p className="text-slate-400 max-w-2xl">
-                Track your food items and monitor expiration dates
+                {t('Track your food items and monitor expiration dates')}
               </p>
             </div>
             <button
@@ -305,7 +307,7 @@ const Inventory = () => {
               className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-indigo-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-indigo-600 transition-all shadow-lg"
             >
               <Plus className="w-5 h-5" />
-              Add Item
+              {t('Add Item')}
             </button>
           </div>
         </div>
@@ -319,7 +321,7 @@ const Inventory = () => {
               <Package className="w-8 h-8 text-blue-400" />
               <div>
                 <div className="text-2xl font-bold text-slate-200">{stats.totalItems}</div>
-                <div className="text-sm text-slate-400">Total Items</div>
+                <div className="text-sm text-slate-400">{t('Total Items')}</div>
               </div>
             </div>
           </div>
@@ -329,7 +331,7 @@ const Inventory = () => {
               <AlertTriangle className="w-8 h-8 text-yellow-400" />
               <div>
                 <div className="text-2xl font-bold text-slate-200">{stats.expiringWarning}</div>
-                <div className="text-sm text-slate-400">Expiring Soon</div>
+                <div className="text-sm text-slate-400">{t('Expiring Soon')}</div>
               </div>
             </div>
           </div>
@@ -339,7 +341,7 @@ const Inventory = () => {
               <AlertCircle className="w-8 h-8 text-red-400" />
               <div>
                 <div className="text-2xl font-bold text-slate-200">{stats.expired}</div>
-                <div className="text-sm text-slate-400">Expired</div>
+                <div className="text-sm text-slate-400">{t('Expired')}</div>
               </div>
             </div>
           </div>
@@ -349,7 +351,7 @@ const Inventory = () => {
               <ShoppingCart className="w-8 h-8 text-green-400" />
               <div>
                 <div className="text-2xl font-bold text-slate-200">${stats.totalValue}</div>
-                <div className="text-sm text-slate-400">Total Value</div>
+                <div className="text-sm text-slate-400">{t('Total Value')}</div>
               </div>
             </div>
           </div>
@@ -376,7 +378,7 @@ const Inventory = () => {
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="px-4 py-3 bg-slate-700/60 border border-slate-600 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
             >
-              <option value="all">All Categories</option>
+              <option value="all">{t('All Categories')}</option>
               {categories.filter(c => c !== 'all').map(category => (
                 <option key={category} value={category}>
                   {category}
@@ -443,19 +445,19 @@ const Inventory = () => {
                     {/* Quantity and Cost */}
                     <div className="space-y-2 text-sm border-t border-slate-700 pt-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-400">Quantity:</span>
+                        <span className="text-slate-400">{t('Quantity')}:</span>
                         <span className="text-slate-300 font-medium">{item.quantity} {item.unit}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-400">Cost:</span>
+                        <span className="text-slate-400">{t('Cost')}:</span>
                         <span className="text-slate-300 font-medium">${(item.custom_cost || item.cost)}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-400">Total:</span>
+                        <span className="text-slate-400">{t('Total')}:</span>
                         <span className="text-slate-200 font-semibold">${((item.custom_cost || item.cost) * item.quantity)}</span>
                       </div>
                       <div className="flex items-center justify-between text-xs text-slate-500">
-                        <span>Added:</span>
+                        <span>{t('Added')}:</span>
                         <span>{new Date(item.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
@@ -467,8 +469,8 @@ const Inventory = () => {
         ) : (
           <div className="text-center py-12">
             <Package className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-slate-300 mb-2">No items found</h3>
-            <p className="text-slate-500">Try adjusting your search or filters</p>
+            <h3 className="text-xl font-semibold text-slate-300 mb-2">{t('No items found')}</h3>
+            <p className="text-slate-500">{t('Try adjusting your search or filters')}</p>
           </div>
         )}
       </section>
@@ -484,7 +486,7 @@ const Inventory = () => {
             <div className="space-y-4">
               {!editingItem && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-200 mb-2">Select Item</label>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">{t('Select Item')}</label>
                   <div className="relative dropdown-container">
                     <button
                       onClick={() => {
@@ -507,7 +509,7 @@ const Inventory = () => {
                           <span>{selectedGlobalItem.item_name}</span>
                         </div>
                       ) : (
-                        <span className="text-slate-400">Select an item...</span>
+                        <span className="text-slate-400">{t('Select an item')}...</span>
                       )}
                       <ChevronDown className="w-4 h-4 text-slate-400" />
                     </button>
@@ -515,7 +517,7 @@ const Inventory = () => {
                     {showDropdown && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-slate-700 border border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto z-10">
                         {globalItemsLoading ? (
-                          <div className="p-4 text-center text-slate-400">Loading items...</div>
+                          <div className="p-4 text-center text-slate-400">{t('Loading items')}...</div>
                         ) : globalItems.length > 0 ? (
                           <>
                             {globalItems.map((item) => (
@@ -548,12 +550,12 @@ const Inventory = () => {
                               className="w-full px-3 py-2 text-left border-t border-slate-600 hover:bg-slate-600 transition-colors text-green-400 font-medium flex items-center gap-2"
                             >
                               <Plus className="w-4 h-4" />
-                              Add New Item
+                              {t('Add New Item')}
                             </button>
                           </>
                         ) : (
                           <div className="p-4">
-                            <div className="text-center text-slate-400 mb-2">No items available</div>
+                            <div className="text-center text-slate-400 mb-2">{t('No items available')}</div>
                             <button
                               onClick={() => {
                                 setShowDropdown(false);
@@ -562,7 +564,7 @@ const Inventory = () => {
                               className="w-full px-3 py-2 text-center hover:bg-slate-600 transition-colors text-green-400 font-medium flex items-center justify-center gap-2"
                             >
                               <Plus className="w-4 h-4" />
-                              Add New Item
+                              {t('Add New Item')}
                             </button>
                           </div>
                         )}
@@ -573,7 +575,7 @@ const Inventory = () => {
               )}
               
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Quantity</label>
+                <label className="block text-sm font-medium text-slate-200 mb-2">{t('Quantity')}</label>
                 <input
                   type="number"
                   step="0.1"
@@ -585,7 +587,7 @@ const Inventory = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Unit</label>
+                <label className="block text-sm font-medium text-slate-200 mb-2">{t('Unit')}</label>
                 <input
                   type="text"
                   value={newItem.unit}
@@ -596,7 +598,7 @@ const Inventory = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Custom Cost (Optional)</label>
+                <label className="block text-sm font-medium text-slate-200 mb-2">{t('Custom Cost')} ({t('Optional')})</label>
                 <input
                   type="number"
                   step="0.01"
@@ -619,14 +621,14 @@ const Inventory = () => {
                 }}
                 className="px-4 py-2 text-slate-400 hover:text-slate-200 transition-colors"
               >
-                Cancel
+                {t('Cancel')}
               </button>
               <button
                 onClick={editingItem ? handleUpdateItem : handleAddItem}
                 disabled={!editingItem && !selectedGlobalItem}
                 className="px-4 py-2 bg-gradient-to-r from-green-500 to-indigo-500 text-white rounded-lg font-medium hover:from-green-600 hover:to-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {editingItem ? 'Update' : 'Add'} Item
+                {editingItem ? 'Update' : 'Add'} {t('Item')}
               </button>
             </div>
           </div>
@@ -644,12 +646,12 @@ const Inventory = () => {
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
-              <h2 className="text-xl font-semibold text-slate-200">Add New Item</h2>
+              <h2 className="text-xl font-semibold text-slate-200">{t('Add New Item')}</h2>
             </div>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Item Name</label>
+                <label className="block text-sm font-medium text-slate-200 mb-2">{t('Item Name')}</label>
                 <input
                   type="text"
                   value={newGlobalItem.item_name}
@@ -660,7 +662,7 @@ const Inventory = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Category</label>
+                <label className="block text-sm font-medium text-slate-200 mb-2">{t('Category')}</label>
                 <input
                   type="text"
                   value={newGlobalItem.category}
@@ -671,7 +673,7 @@ const Inventory = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Expiration Days</label>
+                <label className="block text-sm font-medium text-slate-200 mb-2">{t('Expiration Days')}</label>
                 <input
                   type="number"
                   value={newGlobalItem.expiration_days}
@@ -682,7 +684,7 @@ const Inventory = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Cost</label>
+                <label className="block text-sm font-medium text-slate-200 mb-2">{t('Cost')}</label>
                 <input
                   type="number"
                   step="0.01"
@@ -694,7 +696,7 @@ const Inventory = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">Item Picture</label>
+                <label className="block text-sm font-medium text-slate-200 mb-2">{t('Item Picture')}</label>
                 <div className="relative">
                   {newGlobalItem.image ? (
                     <div className="relative">
@@ -716,7 +718,7 @@ const Inventory = () => {
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <Camera className="w-8 h-8 text-slate-500 mb-2" />
                         <p className="text-sm text-slate-400">
-                          <span className="font-medium">Click to upload</span> or drag and drop
+                          <span className="font-medium">{t('Click to upload')}</span> {t('or drag and drop')}
                         </p>
                         <p className="text-xs text-slate-500">PNG, JPG or WebP (MAX. 5MB)</p>
                       </div>
@@ -753,14 +755,14 @@ const Inventory = () => {
                 }}
                 className="px-4 py-2 text-slate-400 hover:text-slate-200 transition-colors"
               >
-                Cancel
+                {t('Cancel')}
               </button>
               <button
                 onClick={handleAddNewGlobalItem}
                 disabled={!newGlobalItem.item_name || !newGlobalItem.category || !newGlobalItem.expiration_days || !newGlobalItem.cost}
                 className="px-4 py-2 bg-gradient-to-r from-green-500 to-indigo-500 text-white rounded-lg font-medium hover:from-green-600 hover:to-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Submit for Approval
+                {t('Submit for Approval')}
               </button>
             </div>
           </div>
