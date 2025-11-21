@@ -2,7 +2,7 @@ import MealPlan from '../models/MealPlan.js';
 import PlannedMeal from '../models/PlannedMeal.js';
 import User from '../models/User.js';
 import { UserInventory } from '../models/Inventory.js';
-import geminiService from './geminiService.js';
+import geminiService from './aiService.js';
 
 class MealPlanService {
     // Calculate current week (Saturday to Friday)
@@ -27,7 +27,7 @@ class MealPlanService {
         const weekDates = [];
         for (let i = 0; i < 7; i++) {
             const date = new Date(saturday);
-            date.setDate(saturday.getDate() + i);
+            date.setDate(date.getDate() + i);
             weekDates.push(date);
         }
         

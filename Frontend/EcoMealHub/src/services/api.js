@@ -72,6 +72,12 @@ const LogAPI = {
   createLogEntry: (logData) => api.post('/logs', logData)
 };
 
+const MealPlanAPI = {
+  generateMealPlan: () => api.post('/meal-plans/generate'),
+  
+  getActiveMealPlan: () => api.get('/meal-plans/active'),
+  
+  regenerateMealPlan: () => api.post('/meal-plans/regenerate')
+};
 
-
-export { InventoryAPI, ResourceAPI, LogAPI, API_BASE_URL };
+export { InventoryAPI, ResourceAPI, LogAPI, MealPlanAPI, API_BASE_URL };

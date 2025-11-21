@@ -83,6 +83,8 @@ class User {
                 location,
                 google_id,
                 auth_provider,
+                weekly_budget,
+                diet_preference,
                 created_at, 
                 updated_at
             FROM users
