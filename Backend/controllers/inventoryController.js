@@ -67,3 +67,23 @@ export const getGlobalInventoryItems = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }   
+
+
+export const createGlobalInventoryItem = async (req, res) => {
+    try {
+                const { item_name, category, expiration_days, cost, image } = req.body;
+        // console.log(image);
+        
+        
+
+        const item = {
+            item_name, category, expiration_days, cost, image_url: "abc"
+        }
+        
+        const newItem = await inventoryService.createGlobalInventoryItem(item);
+        res.status(201).json(newItem);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}

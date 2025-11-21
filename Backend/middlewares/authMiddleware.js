@@ -1,3 +1,4 @@
+import { decode } from 'jsonwebtoken';
 import { JwtUtils } from '../utills/index.js';
 
 class AuthMiddleware {
@@ -21,6 +22,8 @@ class AuthMiddleware {
 
             // Attach user info to request
             req.user = decoded;
+            console.log(decode);
+            
 
             next();
         } catch (error) {
