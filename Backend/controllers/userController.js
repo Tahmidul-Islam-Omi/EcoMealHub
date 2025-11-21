@@ -25,4 +25,12 @@ export const updateUserProfile = async (req, res) => {
     }
 }
 
-// export const generateAiPattern 
+export const generateAiPattern = async (req, res) =>{
+    try {
+        
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+        
+    }
+}
