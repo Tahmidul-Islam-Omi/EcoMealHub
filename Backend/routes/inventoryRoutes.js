@@ -1,18 +1,19 @@
 import express from 'express';
-
+import { AuthMiddleware } from '../middlewares/index.js';
 import * as InventoryController from '../controllers/inventoryController.js';
 
 const router = express.Router();
 
-router.get('/', InventoryController.getInventoryItems); 
+// All inventory routes require authentication
+router.get('/', AuthMiddleware.authenticate, InventoryController.getInventoryItems); 
 
-router.delete('/:item_id', InventoryController.deleteInventoryItem);
+router.delete('/:item_id', AuthMiddleware.authenticate, InventoryController.deleteInventoryItem);
 
-router.put('/:item_id', InventoryController.updateInventoryItem);
+router.put('/:item_id', AuthMiddleware.authenticate, InventoryController.updateInventoryItem);
 
-router.post('/', InventoryController.createUserInventoryItem);
+router.post('/', AuthMiddleware.authenticate, InventoryController.createUserInventoryItem);
 
-router.get('/global', InventoryController.getGlobalInventoryItems);
+router.get('/global', AuthMiddleware.authenticate, InventoryController.getGlobalInventoryItems);
 
 router.post('/global', InventoryController.createGlobalInventoryItem);
 
