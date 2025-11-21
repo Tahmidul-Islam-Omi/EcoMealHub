@@ -126,6 +126,84 @@ class User {
         
         return user || null;
     }
+
+    static async getProfileById(id){
+        const [user] = await db`
+            SELECT 
+                id, 
+                full_name, 
+                email, 
+                user_type, 
+                household_size, 
+                location,
+                weekly_budget,
+                height,
+                activity_level,
+                diet_preference,
+                weight,
+                gender,
+                created_at, 
+                updated_at
+            FROM users
+            WHERE id = ${id}
+        `;
+        
+        return user || null;
+    }
+
+    static async updateProfileById(id, update_data){
+        if (Object.keys(update_data).length === 0) {
+            throw new Error('No fields to update');
+        }
+
+        console.log(update_data);
+        
+
+        const allowedFields = [
+            'household_size',
+            'location',
+            'weekly_budget',
+            'height',
+            'activity_level',
+            'diet_preference',
+            'weight',
+            'gender'
+        ];
+
+        const filteredData = Object.keys(update_data)
+            .filter(key => allowedFields.includes(key))
+            .reduce((obj, key) => {
+                obj[key] = update_data[key];
+                return obj;
+            }, {});
+
+        if (Object.keys(filteredData).length === 0) {
+            throw new Error('No valid fields to update');
+        }
+
+        const [user] = await db`
+            UPDATE users
+            SET ${db(filteredData)}, updated_at = NOW()
+            WHERE id = ${id}
+            RETURNING 
+                id, 
+                full_name, 
+                email, 
+                user_type, 
+                household_size, 
+                location,
+                weekly_budget,
+                height,
+                activity_level,
+                diet_preference,
+                weight,
+                gender,
+                created_at, 
+                updated_at
+        `;
+
+        return user || null;
+    }
 }
 
 export default User;

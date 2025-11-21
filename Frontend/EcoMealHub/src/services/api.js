@@ -4,7 +4,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 20000, // 20 seconds timeout for AI processing
+  timeout: 40000, // 40 seconds timeout for AI processing
 });
 
 // Add request interceptor to include auth token and debug logging
@@ -16,7 +16,7 @@ api.interceptors.request.use((config) => {
   
   // Debug logging for all API requests
   console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
-  // console.log(`📤 Request data:`, config.data);
+  console.log(`📤 Request data:`, config.data);
   // console.log(`📋 Request headers:`, config.headers);
   
   return config;
@@ -73,5 +73,10 @@ const LogAPI = {
 };
 
 
+const UserAPI ={
+  getProfileById : (userId) => api.get(`/user/${userId}`),
+  updateProfileById : (userId, updateData) => api.put(`/user/${userId}`, updateData) 
+}
 
-export { InventoryAPI, ResourceAPI, LogAPI, API_BASE_URL };
+
+export { InventoryAPI, ResourceAPI, LogAPI, UserAPI, API_BASE_URL };

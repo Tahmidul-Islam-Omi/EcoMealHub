@@ -5,6 +5,7 @@ import googleAuthRoutes from './googleAuthRoutes.js';
 import ResourceRoute from "./ResouceRoute.js";
 import inventoryRoutes from './inventoryRoutes.js';
 import logRoutes from './logRoutes.js';
+import userRoutes from './userRoutes.js'
 
 const router = express.Router();
 
@@ -14,6 +15,7 @@ router.use('/auth', googleAuthRoutes);
 router.use('/resources', ResourceRoute);
 router.use('/inventory', inventoryRoutes);
 router.use('/logs', logRoutes);
+router.use('/user', userRoutes);
 
 
 export default router;
