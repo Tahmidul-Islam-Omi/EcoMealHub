@@ -14,6 +14,9 @@ class AuthMiddleware {
                 });
             }
 
+            console.log("ashena ");
+            
+
             // Extract token
             const token = authHeader.split(' ')[1];
 
@@ -22,7 +25,7 @@ class AuthMiddleware {
 
             // Attach user info to request
             req.user = decoded;
-            console.log(decode);
+            console.log(decoded.email);
             
 
             next();
