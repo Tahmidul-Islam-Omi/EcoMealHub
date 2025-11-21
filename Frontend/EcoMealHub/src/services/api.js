@@ -92,6 +92,7 @@ const UserAPI ={
   updateProfileById : (userId, updateData) => api.put(`/user/${userId}`, updateData) ,
 
   analyzeAiPattern : ()=> api.get('/user/analyze')
+  
 }
 
 const SDGAPI = {

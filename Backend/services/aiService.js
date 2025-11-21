@@ -66,6 +66,15 @@ ${datesList}
 6. Respect dietary preference: ${diet_preference || 'none'}
 7. Each meal should have realistic calorie counts (breakfast: 300-500, lunch: 400-600, dinner: 500-800, snack: 100-200)
 8. Meal titles should be simple and clear (e.g., "Oatmeal with Berries", "Grilled Chicken Salad")
+9. *Ensure minimum nutrition requirements for healthy eating:*
+   - Include adequate protein sources (lean meats, fish, legumes, dairy, eggs)
+   - Incorporate variety of fruits and vegetables (aim for 5+ servings per day)
+   - Include whole grains and complex carbohydrates
+   - Ensure sufficient fiber intake (25-30g per day)
+   - Balance macronutrients: 45-65% carbs, 20-35% fats, 10-35% protein
+   - Include sources of essential vitamins and minerals (calcium, iron, vitamin D, B vitamins)
+   - Limit processed foods, added sugars, and excessive sodium
+   - Ensure meals are nutritionally balanced and support overall health
 
 **Output Format (MUST be valid JSON with exactly 28 meals):**
 {
