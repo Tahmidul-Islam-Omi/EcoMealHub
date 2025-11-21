@@ -76,6 +76,13 @@ const LogAPI = {
   createLogEntry: (logData) => api.post('/logs', logData)
 };
 
+const MealPlanAPI = {
+  generateMealPlan: () => api.post('/meal-plans/generate'),
+  
+  getActiveMealPlan: () => api.get('/meal-plans/active'),
+  
+  regenerateMealPlan: () => api.post('/meal-plans/regenerate')
+};
 
 const UserAPI ={
   getProfileById : (userId) => api.get(`/user/${userId}`),
@@ -85,4 +92,4 @@ const UserAPI ={
 }
 
 
-export { InventoryAPI, ResourceAPI, LogAPI, UserAPI, API_BASE_URL };
+export { InventoryAPI, ResourceAPI, LogAPI,MealPlanAPI, UserAPI, API_BASE_URL };

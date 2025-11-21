@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Calendar, 
   Plus, 
@@ -9,35 +9,128 @@ import {
   Utensils,
   Clock,
   Check,
-  X
+  X,
+  Sparkles,
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
-import { SAMPLE_MEAL_PLANS, MEAL_TYPES, QUICK_ADD_MEALS, SHOPPING_LIST } from '../utills/mealPlanData';
+import { MEAL_TYPES, QUICK_ADD_MEALS, SHOPPING_LIST } from '../utills/mealPlanData';
+import { MealPlanAPI } from '../services/api';
 
 const MealPlanning = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [mealPlan, setMealPlan] = useState(SAMPLE_MEAL_PLANS);
+  const [mealPlan, setMealPlan] = useState({});
+  const [mealPlanData, setMealPlanData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState(null);
   const [showAddMealModal, setShowAddMealModal] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState({ date: null, mealType: null });
   const [shoppingList, setShoppingList] = useState(SHOPPING_LIST);
 
-  // Get week dates
+  // Fetch active meal plan on component mount
+  useEffect(() => {
+    fetchActiveMealPlan();
+  }, []);
+
+  // Fetch active meal plan from backend
+  const fetchActiveMealPlan = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await MealPlanAPI.getActiveMealPlan();
+      if (response.success && response.data) {
+        setMealPlanData(response.data);
+        transformMealPlanData(response.data);
+      }
+    } catch (err) {
+      console.error('Error fetching meal plan:', err);
+      if (err.response?.status === 404) {
+        setError('No meal plan found. Generate one to get started!');
+      } else {
+        setError('Failed to load meal plan');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Transform backend meal plan data to component state format
+  const transformMealPlanData = (data) => {
+    const { meals } = data;
+    const transformed = {};
+    
+    meals.forEach(meal => {
+      // Normalize date to YYYY-MM-DD format (remove time if present)
+      const dateKey = meal.meal_date.split('T')[0];
+      if (!transformed[dateKey]) {
+        transformed[dateKey] = {};
+      }
+      transformed[dateKey][meal.meal_type] = {
+        title: meal.meal_title,
+        calories: meal.calories,
+        id: meal.id
+      };
+    });
+    
+    setMealPlan(transformed);
+  };
+
+  // Generate new meal plan
+  const handleGenerateMealPlan = async () => {
+    setGenerating(true);
+    setError(null);
+    try {
+      const response = await MealPlanAPI.generateMealPlan();
+      if (response.success && response.data) {
+        setMealPlanData(response.data);
+        transformMealPlanData(response.data);
+      }
+    } catch (err) {
+      console.error('Error generating meal plan:', err);
+      setError(err.response?.data?.message || 'Failed to generate meal plan');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  // Regenerate meal plan
+  const handleRegenerateMealPlan = async () => {
+    setGenerating(true);
+    setError(null);
+    try {
+      const response = await MealPlanAPI.regenerateMealPlan();
+      if (response.success && response.data) {
+        setMealPlanData(response.data);
+        transformMealPlanData(response.data);
+      }
+    } catch (err) {
+      console.error('Error regenerating meal plan:', err);
+      setError(err.response?.data?.message || 'Failed to regenerate meal plan');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  // Get week dates (Saturday to Friday to match backend)
   const getWeekDates = (date) => {
     const week = [];
     const startDate = new Date(date);
     const day = startDate.getDay();
-    const diff = startDate.getDate() - day;
-    startDate.setDate(diff);
+    // Calculate days since last Saturday (0=Sun, 6=Sat)
+    const daysSinceSaturday = (day + 1) % 7;
+    startDate.setDate(startDate.getDate() - daysSinceSaturday);
+    startDate.setHours(0, 0, 0, 0);
 
     for (let i = 0; i < 7; i++) {
-      const weekDate = new Date(startDate);
-      weekDate.setDate(startDate.getDate() + i);
+      const weekDate = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
       week.push(weekDate);
     }
     return week;
   };
 
   const weekDates = getWeekDates(currentDate);
-  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weekdays = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
   // Navigate weeks
   const goToPreviousWeek = () => {
@@ -57,11 +150,9 @@ const MealPlanning = () => {
     return date.toISOString().split('T')[0];
   };
 
-  // Add meal to plan
+  // Add meal to plan (kept for modal functionality)
   const addMealToPlan = (date, mealType, meal) => {
-    // TODO: Replace with API call
-    // await addMealToPlan(date, mealType, meal.id);
-    
+    // Note: This is for manual additions, not AI-generated plans
     const dateKey = formatDateKey(date);
     setMealPlan(prev => ({
       ...prev,
@@ -71,21 +162,6 @@ const MealPlanning = () => {
       }
     }));
     setShowAddMealModal(false);
-  };
-
-  // Remove meal from plan
-  const removeMealFromPlan = (date, mealType) => {
-    // TODO: Replace with API call
-    // await removeMealFromPlan(formatDateKey(date), mealType);
-    
-    const dateKey = formatDateKey(date);
-    setMealPlan(prev => ({
-      ...prev,
-      [dateKey]: {
-        ...prev[dateKey],
-        [mealType]: null
-      }
-    }));
   };
 
   // Calculate weekly nutrition
@@ -150,23 +226,105 @@ const MealPlanning = () => {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <button className="inline-flex items-center gap-2 bg-purple-500/20 text-purple-300 px-4 py-2 rounded-lg border border-purple-500/30 hover:bg-purple-500/30 transition-colors">
+              {/* <button className="inline-flex items-center gap-2 bg-purple-500/20 text-purple-300 px-4 py-2 rounded-lg border border-purple-500/30 hover:bg-purple-500/30 transition-colors">
                 <ShoppingCart className="w-4 h-4" />
                 Shopping List
-              </button>
-              <button className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg">
-                <Plus className="w-5 h-5" />
-                Quick Add
-              </button>
+              </button> */}
+              {mealPlanData ? (
+                <button 
+                  onClick={handleRegenerateMealPlan}
+                  disabled={generating}
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Regenerating...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-5 h-5" />
+                      Regenerate Plan
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button 
+                  onClick={handleGenerateMealPlan}
+                  disabled={generating}
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5" />
+                      Generate AI Plan
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+            <p className="text-red-400">{error}</p>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <Loader2 className="w-12 h-12 text-purple-400 animate-spin mx-auto mb-4" />
+              <p className="text-slate-400">Loading meal plan...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && !mealPlanData && !error && (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center max-w-md">
+              <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-semibold text-slate-200 mb-2">No Meal Plan Yet</h3>
+              <p className="text-slate-400 mb-6">
+                Generate an AI-powered meal plan based on your preferences, budget, and available inventory.
+              </p>
+              <button 
+                onClick={handleGenerateMealPlan}
+                disabled={generating}
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-4 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg disabled:opacity-50"
+              >
+                {generating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" />
+                    Generate AI Meal Plan
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Meal Plan Grid */}
+        {!loading && mealPlanData && (
+        <div className="grid grid-cols-1 gap-8">
           {/* Main Meal Plan */}
-          <div className="lg:col-span-3">
+          <div>
             {/* Week Navigation */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
@@ -201,7 +359,7 @@ const MealPlanning = () => {
                 <div className="p-4 text-slate-400 font-medium">Meal</div>
                 {weekDates.map((date, index) => (
                   <div key={index} className="p-4 text-center border-l border-slate-700">
-                    <div className="text-slate-400 text-sm">{weekdays[date.getDay()]}</div>
+                    <div className="text-slate-400 text-sm">{weekdays[index]}</div>
                     <div className="text-slate-200 font-semibold">{date.getDate()}</div>
                   </div>
                 ))}
@@ -224,33 +382,15 @@ const MealPlanning = () => {
                       <div key={dateIndex} className="p-2 border-l border-slate-700 min-h-[100px] relative group">
                         {meal ? (
                           <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 h-full relative">
-                            <button
-                              onClick={() => removeMealFromPlan(date, mealType)}
-                              className="absolute top-1 right-1 w-6 h-6 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/30"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                            <h4 className="text-slate-200 font-medium text-sm mb-1 pr-6">{meal.title}</h4>
+                            <h4 className="text-slate-200 font-medium text-sm mb-1">{meal.title}</h4>
                             <div className="flex items-center gap-2 text-xs text-slate-400">
                               <span>{meal.calories} cal</span>
-                              {meal.prepTime && (
-                                <>
-                                  <span>•</span>
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    <span>{meal.prepTime}m</span>
-                                  </div>
-                                </>
-                              )}
                             </div>
                           </div>
                         ) : (
-                          <button
-                            onClick={() => openAddMealModal(date, mealType)}
-                            className="w-full h-full flex items-center justify-center border-2 border-dashed border-slate-600 rounded-lg hover:border-purple-500/50 hover:bg-purple-500/5 transition-colors group-hover:border-purple-500/30"
-                          >
-                            <Plus className="w-6 h-6 text-slate-500 group-hover:text-purple-400 transition-colors" />
-                          </button>
+                          <div className="w-full h-full flex items-center justify-center border-2 border-dashed border-slate-600 rounded-lg">
+                            <span className="text-slate-500 text-xs">No meal</span>
+                          </div>
                         )}
                       </div>
                     );
@@ -260,9 +400,8 @@ const MealPlanning = () => {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Weekly Stats */}
+          {/* Sidebar - Commented out for future implementation */}
+          {/* <div className="space-y-6">
             <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-slate-200 mb-4 flex items-center gap-2">
                 <Target className="w-5 h-5 text-purple-400" />
@@ -285,7 +424,6 @@ const MealPlanning = () => {
                   </span>
                 </div>
                 
-                {/* Progress Bar */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-400">Planning Progress</span>
@@ -303,7 +441,6 @@ const MealPlanning = () => {
               </div>
             </div>
 
-            {/* Shopping List Preview */}
             <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-slate-200 flex items-center gap-2">
@@ -349,8 +486,9 @@ const MealPlanning = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
+        )}
       </div>
 
       {/* Add Meal Modal */}
