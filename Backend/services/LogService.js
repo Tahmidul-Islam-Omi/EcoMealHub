@@ -1,4 +1,4 @@
-import Logs from "../models/Logs";
+import Logs from '../models/Logs.js';
 
 export const getLogsByUserId = async (user_id)=>{
     try {

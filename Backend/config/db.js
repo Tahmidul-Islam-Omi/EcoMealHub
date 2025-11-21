@@ -11,7 +11,7 @@ const db = postgres({
     user: supabaseEnv.user,
     password: supabaseEnv.password,
     poolMode: supabaseEnv.pool_mode,
-    ssl: 'require'
+    ssl: { rejectUnauthorized: false }
 });
 
 // Function to test database connection

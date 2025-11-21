@@ -29,3 +29,5 @@ supabase/.temp
 supabase/.env
 
 *.env
+
+.vscode/
