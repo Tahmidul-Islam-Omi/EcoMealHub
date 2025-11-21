@@ -226,10 +226,10 @@ const MealPlanning = () => {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <button className="inline-flex items-center gap-2 bg-purple-500/20 text-purple-300 px-4 py-2 rounded-lg border border-purple-500/30 hover:bg-purple-500/30 transition-colors">
+              {/* <button className="inline-flex items-center gap-2 bg-purple-500/20 text-purple-300 px-4 py-2 rounded-lg border border-purple-500/30 hover:bg-purple-500/30 transition-colors">
                 <ShoppingCart className="w-4 h-4" />
                 Shopping List
-              </button>
+              </button> */}
               {mealPlanData ? (
                 <button 
                   onClick={handleRegenerateMealPlan}
@@ -322,9 +322,9 @@ const MealPlanning = () => {
 
         {/* Meal Plan Grid */}
         {!loading && mealPlanData && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 gap-8">
           {/* Main Meal Plan */}
-          <div className="lg:col-span-3">
+          <div>
             {/* Week Navigation */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
@@ -400,9 +400,8 @@ const MealPlanning = () => {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Weekly Stats */}
+          {/* Sidebar - Commented out for future implementation */}
+          {/* <div className="space-y-6">
             <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-slate-200 mb-4 flex items-center gap-2">
                 <Target className="w-5 h-5 text-purple-400" />
@@ -425,7 +424,6 @@ const MealPlanning = () => {
                   </span>
                 </div>
                 
-                {/* Progress Bar */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-400">Planning Progress</span>
@@ -443,7 +441,6 @@ const MealPlanning = () => {
               </div>
             </div>
 
-            {/* Shopping List Preview */}
             <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-slate-200 flex items-center gap-2">
@@ -489,7 +486,7 @@ const MealPlanning = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
         )}
       </div>
