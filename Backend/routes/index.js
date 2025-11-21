@@ -9,6 +9,7 @@ import userRoutes from './userRoutes.js'
 import mealPlanRoutes from './mealPlanRoutes.js';
 import wasteEstimationRoutes from './wasteEstimationRoutes.js';
 import chatBotRoute from './chatBotRoutes.js';
+import sdgRoutes from './sdgRoutes.js';
 
 const router = express.Router();
 
@@ -21,6 +22,7 @@ router.use('/logs', logRoutes);
 router.use('/user', userRoutes);
 router.use('/meal-plans', mealPlanRoutes);
 router.use('/waste-estimation', wasteEstimationRoutes);
+router.use('/sdg', sdgRoutes);
 
 router.use('/chat', chatBotRoute);
 

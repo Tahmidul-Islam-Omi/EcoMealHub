@@ -33,7 +33,7 @@ import {
   Legend
 } from 'recharts';
 
-import { LogAPI, InventoryAPI, UserAPI } from '../services/api';
+import { LogAPI, InventoryAPI, UserAPI, SDGAPI } from '../services/api';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -57,11 +57,46 @@ const Dashboard = () => {
   const [inventoryAlerts, setInventoryAlerts] = useState([]);
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [sdgData, setSdgData] = useState({
+    totalScore: 78,
+    breakdown: {},
+    insights: null,
+    loading: true
+  });
+
+  const fetchSDGData = async () => {
+    try {
+      console.log('🔄 Fetching SDG data...');
+      
+      const [scoreResponse, insightsResponse] = await Promise.all([
+        SDGAPI.getSDGScore(),
+        SDGAPI.getWeeklyInsights()
+      ]);
+      
+      console.log('📊 SDG Score Response:', scoreResponse);
+      console.log('💡 SDG Insights Response:', insightsResponse);
+      
+      const sdgUpdate = {
+        totalScore: scoreResponse.data.totalScore,
+        breakdown: scoreResponse.data.breakdown,
+        insights: insightsResponse.data,
+        loading: false
+      };
+      
+      console.log('🎯 Setting SDG Data:', sdgUpdate);
+      setSdgData(sdgUpdate);
+    } catch (error) {
+      console.error('Error fetching SDG data:', error);
+      // Keep default values if API fails
+      setSdgData(prev => ({ ...prev, loading: false }));
+    }
+  };
 
   useEffect(() => {
     fetchUserData();
     fetchConsumptionData();
     fetchInventoryData();
+    fetchSDGData();
   }, []);
 
   const fetchUserData = async () => {
@@ -233,26 +268,29 @@ const Dashboard = () => {
     }
   };
 
+  // Dynamic recommendations from SDG insights + static fallbacks
   const recommendations = [
-    {
-      type: 'meal',
-      title: 'High Protein Breakfast',
-      description: 'Based on your low protein intake yesterday',
-      action: 'View Recipe'
-    },
+    ...(sdgData.insights?.actionableSteps?.slice(0, 2).map(step => {
+      const title = typeof step === 'string' ? step : 
+                   typeof step === 'object' && step?.title ? step.title : 
+                   'Sustainability Tip';
+      const description = typeof step === 'object' && step?.description ? step.description : 
+                         'AI-powered sustainability recommendation';
+      
+      return {
+        type: 'sustainability',
+        title: String(title), // Ensure it's a string
+        description: String(description), // Ensure it's a string
+        action: 'Take Action'
+      };
+    }) || []),
     {
       type: 'budget',
       title: 'Budget Alert',
       description: 'You\'re 15% over your weekly food budget',
       action: 'View Budget'
-    },
-    {
-      type: 'sustainability',
-      title: 'Reduce Food Waste',
-      description: 'Use expiring tomatoes in today\'s meals',
-      action: 'Get Ideas'
     }
-  ];
+  ].slice(0, 3); // Show max 3 recommendations
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -338,7 +376,7 @@ const Dashboard = () => {
               <div className="p-3 bg-orange-500/20 rounded-lg">
                 <Target className="w-6 h-6 text-orange-400" />
               </div>
-              <span className="text-sm text-orange-400 font-medium">On track</span>
+              <span className="text-sm text-orange-400 font-medium">Good</span>
             </div>
             <h3 className="text-2xl font-bold text-slate-200 mb-1">78%</h3>
             <p className="text-slate-400 text-sm">{t('Sustainability Goal')}</p>
@@ -456,6 +494,169 @@ const Dashboard = () => {
               </>
             )}
           </div>
+        </div>
+
+        {/* SDG Impact Score & Insights */}
+        <div className="mb-8 bg-slate-800/60 border border-slate-700 rounded-xl p-6">
+
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-slate-200 flex items-center gap-2">
+              <Target className="w-5 h-5 text-orange-400" />
+              SDG Impact & AI Insights
+            </h2>
+            {!sdgData.loading && (
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-slate-200">{sdgData.totalScore || 0}%</div>
+                  <div className={`text-sm font-medium ${
+                    (sdgData.totalScore || 0) >= 80 ? 'text-green-400' : 
+                    (sdgData.totalScore || 0) >= 60 ? 'text-orange-400' : 'text-red-400'
+                  }`}>
+                    {(sdgData.totalScore || 0) >= 80 ? 'SDG Champion' : 
+                     (sdgData.totalScore || 0) >= 60 ? 'SDG Achiever' : 
+                     (sdgData.totalScore || 0) >= 45 ? 'SDG Learner' : 'SDG Beginner'}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {sdgData.loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-slate-400">Loading SDG data...</div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Score Breakdown */}
+              {sdgData.breakdown && typeof sdgData.breakdown === 'object' && Object.keys(sdgData.breakdown).length > 0 && (
+                <div>
+                  <h3 className="text-lg font-medium text-slate-200 mb-4">Impact Breakdown</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {Object.entries(sdgData.breakdown)
+                      .filter(([, data]) => data && typeof data === 'object')
+                      .map(([key, data]) => (
+                        <div key={key} className="bg-slate-700/40 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="text-slate-200 font-medium capitalize text-sm">
+                              {String(key).replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                            </h4>
+                            <span className={`text-sm font-bold ${
+                              (data?.score || 0) >= 80 ? 'text-green-400' : 
+                              (data?.score || 0) >= 60 ? 'text-orange-400' : 'text-red-400'
+                            }`}>
+                              {String(data?.score || 0)}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-600 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full transition-all duration-300 ${
+                                (data?.score || 0) >= 80 ? 'bg-green-500' : 
+                                (data?.score || 0) >= 60 ? 'bg-orange-500' : 'bg-red-500'
+                              }`}
+                              style={{ width: `${Number(data?.score || 0)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* AI Insights */}
+              {sdgData.insights && typeof sdgData.insights === 'object' && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Weekly Insight */}
+                  {sdgData.insights.weeklyInsight && typeof sdgData.insights.weeklyInsight === 'string' && (
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                      <h3 className="text-blue-400 font-medium mb-2 flex items-center gap-2">
+                        <Lightbulb className="w-4 h-4" />
+                        AI Weekly Insight
+                      </h3>
+                      <p className="text-slate-300 text-sm">{String(sdgData.insights.weeklyInsight)}</p>
+                    </div>
+                  )}
+
+                  {/* Achievements */}
+                  {sdgData.insights.achievements && Array.isArray(sdgData.insights.achievements) && sdgData.insights.achievements.length > 0 && (
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                      <h3 className="text-green-400 font-medium mb-2 flex items-center gap-2">
+                        <Award className="w-4 h-4" />
+                        Recent Achievements
+                      </h3>
+                      <ul className="text-slate-300 text-sm space-y-1">
+                        {sdgData.insights.achievements.slice(0, 3).map((achievement, index) => {
+                          let text = 'Achievement unlocked';
+                          if (typeof achievement === 'string') {
+                            text = achievement;
+                          } else if (typeof achievement === 'object' && achievement) {
+                            text = achievement.description || achievement.title || achievement.message || text;
+                          }
+                          return (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="text-green-400 mt-1">•</span>
+                              <span>{String(text)}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Next Steps */}
+                  {sdgData.insights.nextSteps && Array.isArray(sdgData.insights.nextSteps) && sdgData.insights.nextSteps.length > 0 && (
+                    <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
+                      <h3 className="text-orange-400 font-medium mb-2 flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4" />
+                        Next Steps
+                      </h3>
+                      <ul className="text-slate-300 text-sm space-y-1">
+                        {sdgData.insights.nextSteps.slice(0, 3).map((step, index) => {
+                          let text = 'Improvement suggestion';
+                          if (typeof step === 'string') {
+                            text = step;
+                          } else if (typeof step === 'object' && step) {
+                            text = step.title || step.description || step.suggestion || text;
+                          }
+                          return (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="text-orange-400 mt-1">•</span>
+                              <span>{String(text)}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Improvements */}
+                  {sdgData.insights.improvements && Array.isArray(sdgData.insights.improvements) && sdgData.insights.improvements.length > 0 && (
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
+                      <h3 className="text-purple-400 font-medium mb-2 flex items-center gap-2">
+                        <Activity className="w-4 h-4" />
+                        Areas for Improvement
+                      </h3>
+                      <ul className="text-slate-300 text-sm space-y-1">
+                        {sdgData.insights.improvements.slice(0, 3).map((improvement, index) => {
+                          let text = 'Improvement area';
+                          if (typeof improvement === 'string') {
+                            text = improvement;
+                          } else if (typeof improvement === 'object' && improvement) {
+                            text = improvement.suggestion || improvement.description || improvement.title || text;
+                          }
+                          return (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="text-purple-400 mt-1">•</span>
+                              <span>{String(text)}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

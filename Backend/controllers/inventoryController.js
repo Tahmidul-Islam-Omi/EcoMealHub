@@ -57,7 +57,7 @@ export const createUserInventoryItem = async (req, res) => {
         if(!expiration_day){
             expiration_time = null;
         }
-        const newItem = await inventoryService.createUserInventoryItem(userId, item_id, quantity, unit, cost, expiration_day);
+        const newItem = await inventoryService.createUserInventoryItem(userId, item_id, quantity, unit, cost, expiration_time);
         res.status(201).json(newItem);
     } catch (error) {
         res.status(500).json({ error: error.message });

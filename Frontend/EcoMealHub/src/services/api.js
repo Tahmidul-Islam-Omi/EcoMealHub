@@ -94,5 +94,14 @@ const UserAPI ={
   analyzeAiPattern : ()=> api.get('/user/analyze')
 }
 
+const SDGAPI = {
+  getSDGScore: () => api.get('/sdg/score'),
+  
+  getWeeklyInsights: () => api.get('/sdg/insights'),
+  
+  getSDGTargets: () => api.get('/sdg/targets'),
+  
+  getSDGHistory: () => api.get('/sdg/history')
+};
 
-export { InventoryAPI, ResourceAPI, LogAPI,MealPlanAPI,ChatBotAPI, UserAPI, API_BASE_URL };
+export { InventoryAPI, ResourceAPI, LogAPI,MealPlanAPI,ChatBotAPI, SDGAPI, UserAPI, API_BASE_URL };
