@@ -6,6 +6,7 @@ import ResourceRoute from "./ResouceRoute.js";
 import inventoryRoutes from './inventoryRoutes.js';
 import logRoutes from './logRoutes.js';
 import mealPlanRoutes from './mealPlanRoutes.js';
+import wasteEstimationRoutes from './wasteEstimationRoutes.js';
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.use('/resources', ResourceRoute);
 router.use('/inventory', inventoryRoutes);
 router.use('/logs', logRoutes);
 router.use('/meal-plans', mealPlanRoutes);
+router.use('/waste-estimation', wasteEstimationRoutes);
 
 
 export default router;
