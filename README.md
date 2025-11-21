@@ -7,6 +7,7 @@
 ### Backend
 - **Node.js** with **Express.js** - RESTful API server
 - **PostgreSQL** with **Supabase** - Cloud database service
+- **Google Gemini AI** - AI-powered text analysis and SDG insights
 - **JWT** - Authentication and authorization
 - **Bcrypt** - Password hashing
 - **Multer** - File upload handling
@@ -22,28 +23,60 @@
 - **Tailwind CSS** - Utility-first CSS framework
 - **Lucide React** - Icon library
 - **Tesseract.js** - OCR (Optical Character Recognition)
-- **Recharts** - Data visualization
+- **Recharts** - Data visualization and analytics
 
 ## 📋 Features
 
-- **Food Inventory Management** - Track food items with quantities, costs, and expiration dates
-- **OCR Receipt Scanning** - Extract food items from receipt images automatically
-- **Expiration Monitoring** - Visual alerts for expiring and expired items
-- **Resource Sharing** - Community platform for sharing food-related resources
-- **Meal Planning** - Plan meals using your inventory
-- **Recipe Management** - Store and organize recipes
-- **Activity Logging** - Track all inventory changes and activities
-- **Google OAuth** - Social authentication
-- **Email Notifications** - Password reset and notifications
+### 🍱 Core Features
+- **Food Inventory Management** - Track food items with quantities, costs, expiration dates, and categories
+- **Smart Global Inventory** - Pre-populated database of common food items with estimated expiration times
+- **Expiration Monitoring** - Visual alerts for expiring and expired items with color-coded warnings
+- **Activity Logging** - Comprehensive tracking of all inventory changes and meal consumption
+- **User Profiles** - Customizable profiles with household size, dietary preferences, and goals
+
+### 🤖 AI-Powered Features
+- **OCR Receipt Scanning** - Extract food items from receipt images using Tesseract.js
+- **AI Text Analysis** - Google Gemini AI automatically structures and categorizes extracted food data
+- **SDG Impact Scoring** - AI-powered sustainability scoring based on UN Sustainable Development Goals
+- **Weekly AI Insights** - Personalized recommendations for reducing waste and improving nutrition
+- **Smart Recommendations** - AI-generated suggestions for meal planning and food usage
+
+### 📊 Analytics & Insights
+- **Interactive Dashboard** - Real-time visualization of consumption patterns, spending, and inventory health
+- **SDG Impact Breakdown** - Detailed scoring across waste reduction, nutrition, sustainability, and budget efficiency
+- **Consumption Trends** - Charts showing calorie intake and spending over time
+- **Category Distribution** - Visual breakdown of food inventory by category
+- **Achievement Tracking** - Gamified progress tracking with achievements and milestones
+
+### 🌱 Sustainability Features
+- **Waste Reduction Tracking** - Monitor food waste patterns and get improvement suggestions
+- **Inventory Turnover Analysis** - Track how efficiently you use your food inventory
+- **Expiration Management** - Proactive alerts to use food before it expires
+- **Budget Efficiency Scoring** - Optimize food spending and reduce waste
+- **Next Steps Recommendations** - Actionable tips to improve sustainability practices
+
+### 🔐 Authentication & Security
+- **JWT Authentication** - Secure token-based authentication
+- **Google OAuth Integration** - Quick sign-in with Google accounts
+- **Password Reset** - Email-based password recovery with secure verification codes
+- **Role-Based Access** - User and admin role management
+
+### 🎨 User Experience
+- **Resource Sharing** - Community platform for sharing food-related tips and resources
+- **Meal Planning** - Plan meals using your current inventory
+- **Recipe Management** - Store and organize favorite recipes
+- **Responsive Design** - Mobile-friendly interface with Tailwind CSS
+- **Real-time Updates** - Instant UI updates with React state management
 
 ## 🛠️ Setup Instructions
 
 ### Prerequisites
 - **Node.js** (v18 or higher)
 - **npm** or **yarn**
-- **PostgreSQL** database (Supabase account)
-- **Google OAuth** credentials (optional)
-- **Resend API** key (for emails)
+- **PostgreSQL** database (Supabase account) - [Sign up here](https://supabase.com)
+- **Google Gemini API** key - [Get free API key](https://makersuite.google.com/app/apikey)
+- **Resend API** key (optional, for email features) - [Get API key](https://resend.com)
+- **Google OAuth** credentials (optional, for social login) - [Google Console](https://console.cloud.google.com)
 
 ### 1. Clone the Repository
 ```bash
@@ -75,6 +108,9 @@ pool_mode=session
 JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
 SERVER_PORT=3000
 NODE_ENV=development
+
+# AI Service (Google Gemini)
+GEMINI_API_KEY=your_gemini_api_key_from_google_ai_studio
 
 # Email Service (Resend)
 RESEND_API_KEY=your_resend_api_key
@@ -232,59 +268,165 @@ INSERT INTO resources (user_id, title, description, category, url) VALUES
 ### Authentication
 - `POST /api/v1/auth/register` - User registration
 - `POST /api/v1/auth/login` - User login
-- `GET /api/v1/auth/google` - Google OAuth
+- `GET /api/v1/auth/google` - Google OAuth login
+- `GET /api/v1/auth/google/callback` - Google OAuth callback
 - `POST /api/v1/auth/forgot-password` - Request password reset
-- `POST /api/v1/auth/reset-password` - Reset password
+- `POST /api/v1/auth/verify-code` - Verify reset code
+- `POST /api/v1/auth/reset-password` - Reset password with verified code
 
-### Inventory
-- `GET /api/v1/inventory` - Get user inventory
-- `POST /api/v1/inventory` - Add inventory item
-- `PUT /api/v1/inventory/:id` - Update inventory item
-- `DELETE /api/v1/inventory/:id` - Delete inventory item
-- `GET /api/v1/inventory/global` - Get global inventory items
-- `POST /api/v1/inventory/text-analysis` - OCR text analysis
-- `POST /api/v1/inventory/add-ocr-items` - Add OCR extracted items
+### Inventory Management
+- `GET /api/v1/inventory` - Get user's inventory items (authenticated)
+- `POST /api/v1/inventory` - Add new inventory item (authenticated)
+- `PUT /api/v1/inventory/:id` - Update inventory item (authenticated)
+- `DELETE /api/v1/inventory/:id` - Delete inventory item (authenticated)
+- `GET /api/v1/inventory/global` - Get global inventory database
+- `POST /api/v1/inventory/global` - Add item to global inventory (admin)
+
+### AI-Powered Features
+- `POST /api/v1/inventory/text-analysis` - Analyze OCR text with Gemini AI
+- `POST /api/v1/inventory/add-ocr-items` - Add AI-extracted items to inventory
+
+### SDG Impact Scoring
+- `GET /api/v1/sdg/score` - Get user's SDG impact score (authenticated)
+- `GET /api/v1/sdg/insights` - Get weekly AI insights (authenticated)
+- `GET /api/v1/sdg/targets` - Get SDG target information
+- `GET /api/v1/sdg/history` - Get historical SDG scores (authenticated)
 
 ### Resources
-- `GET /api/v1/resources` - Get all resources
-- `POST /api/v1/resources` - Create resource
-- `PUT /api/v1/resources/:id` - Update resource
-- `DELETE /api/v1/resources/:id` - Delete resource
+- `GET /api/v1/resources` - Get all resources (with pagination)
+- `POST /api/v1/resources` - Create resource (authenticated)
+- `PUT /api/v1/resources/:id` - Update resource (authenticated)
+- `DELETE /api/v1/resources/:id` - Delete resource (authenticated)
 
-### Logs
-- `GET /api/v1/logs` - Get user activity logs
-- `POST /api/v1/logs` - Create log entry
+### Activity Logs
+- `GET /api/v1/logs` - Get user activity logs (authenticated)
+- `POST /api/v1/logs` - Create log entry (authenticated)
+
+### User Profile
+- `GET /api/v1/user/:id` - Get user profile (authenticated)
+- `PUT /api/v1/user/:id` - Update user profile (authenticated)
 
 ## 🔐 Environment Variables
 
 ### Required Backend Variables
-- `host` - Database host
-- `port` - Database port
-- `database` - Database name
+- `host` - Database host (Supabase)
+- `port` - Database port (default: 5432)
+- `database` - Database name (default: postgres)
 - `user` - Database user
 - `password` - Database password
-- `JWT_SECRET` - JWT signing secret
+- `JWT_SECRET` - JWT signing secret (use strong random string)
 - `SERVER_PORT` - Server port (default: 3000)
+- `NODE_ENV` - Environment (development/production)
 
-### Optional Backend Variables
-- `RESEND_API_KEY` - For email functionality
+### AI & External Services
+- `GEMINI_API_KEY` - **Required** - Google Gemini AI API key for OCR text analysis and SDG insights
+  - Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+  - Free tier available with rate limits
+- `RESEND_API_KEY` - For email functionality (password reset)
 - `FROM_EMAIL` - Email sender address
-- `GOOGLE_CLIENT_ID` - For Google OAuth
-- `GOOGLE_CLIENT_SECRET` - For Google OAuth
-- `GOOGLE_CALLBACK_URL` - Google OAuth callback URL
+
+### Optional Authentication
+- `GOOGLE_CLIENT_ID` - For Google OAuth integration
+- `GOOGLE_CLIENT_SECRET` - For Google OAuth integration
+- `GOOGLE_CALLBACK_URL` - Google OAuth callback URL (default: http://localhost:3000/api/v1/auth/google/callback)
+
+## 🌍 SDG Impact Scoring System
+
+EcoMealHub implements a comprehensive sustainability scoring system based on the United Nations Sustainable Development Goals (SDGs), specifically targeting:
+- **SDG 2**: Zero Hunger (Nutrition & Food Security)
+- **SDG 3**: Good Health and Well-being
+- **SDG 12**: Responsible Consumption and Production
+
+### Scoring Components
+
+#### 1. Waste Reduction (30%)
+- **Inventory Turnover**: How quickly you use items before expiration
+- **Expiration Management**: Percentage of items used before expiring
+- **Food Waste Patterns**: Tracking and reducing expired items
+- **Smart Shopping**: Buying appropriate quantities
+
+#### 2. Nutrition Quality (25%)
+- **Meal Logging Consistency**: Regular tracking of meals
+- **Calorie Balance**: Maintaining healthy daily intake
+- **Dietary Diversity**: Variety in food categories
+- **Fresh Produce Consumption**: Prioritizing fresh over processed foods
+
+#### 3. Sustainability Practices (25%)
+- **Inventory Diversity**: Balance across food categories
+- **Fresh Food Ratio**: Fresh vs. processed items
+- **Seasonal Awareness**: Using seasonal produce
+- **Local Sourcing**: Supporting local food systems
+
+#### 4. Budget Efficiency (20%)
+- **Cost Per Meal**: Optimizing spending without sacrificing quality
+- **Price Consciousness**: Smart shopping decisions
+- **Waste-Cost Ratio**: Financial impact of food waste
+- **Value Optimization**: Getting the most from your food budget
+
+### AI-Powered Insights
+
+The system uses Google Gemini AI to:
+- Analyze your consumption patterns
+- Identify improvement opportunities
+- Generate personalized weekly insights
+- Suggest actionable next steps
+- Track achievements and milestones
+- Provide context-aware recommendations
+
+### Score Interpretation
+
+- **90-100**: 🏆 **SDG Champion** - Leading by example in sustainable food management
+- **75-89**: ⭐ **SDG Achiever** - Making significant positive impact
+- **60-74**: 👍 **SDG Contributor** - Good progress with room for improvement
+- **45-59**: 📈 **SDG Learner** - On the right track, keep improving
+- **0-44**: 🌱 **SDG Beginner** - Just starting your sustainability journey
 
 ## 🚦 Health Check
 
 Visit `http://localhost:3000/health` to check if the backend server is running properly.
 
-## 📱 Usage
+## 📱 Usage Guide
 
-1. **Register/Login** - Create an account or sign in
-2. **Add Items** - Manually add food items or scan receipts using OCR
-3. **Monitor Expiration** - View items expiring soon on the dashboard
-4. **Plan Meals** - Use your inventory to plan meals
-5. **Share Resources** - Share food-related tips and resources
-6. **Track Activity** - View logs of all your inventory changes
+### Getting Started
+1. **Register/Login** - Create an account with email/password or use Google OAuth
+2. **Complete Profile** - Add household size, dietary preferences, and sustainability goals
+3. **Set Up Inventory** - Start adding food items manually or use OCR scanning
+
+### Managing Inventory
+1. **Add Items Manually** - Select from global inventory or create custom items
+2. **Scan Receipts** - Upload receipt images, AI extracts and categorizes items automatically
+3. **Monitor Expiration** - Dashboard shows color-coded alerts for expiring items
+4. **Update Quantities** - Track consumption and adjust inventory levels
+
+### AI-Powered Features
+1. **OCR Receipt Scanning**:
+   - Take a photo of your grocery receipt
+   - Upload to the OCR scanner
+   - AI extracts food items with quantities, costs, and categories
+   - Review and confirm items before adding to inventory
+
+2. **SDG Impact Tracking**:
+   - View your sustainability score (0-100) on the dashboard
+   - Get breakdown across 4 key areas:
+     - Waste Reduction (30%)
+     - Nutrition Quality (25%)
+     - Sustainability Practices (25%)
+     - Budget Efficiency (20%)
+   - Receive weekly AI-generated insights and recommendations
+   - Track achievements and progress over time
+
+### Using the Dashboard
+1. **Quick Stats** - View daily calories, weekly spending, inventory health, and sustainability score
+2. **Consumption Trends** - Interactive charts showing your eating patterns and costs
+3. **Category Distribution** - Visual breakdown of your food inventory
+4. **Inventory Alerts** - Immediate notifications for expiring items
+5. **AI Recommendations** - Personalized tips to reduce waste and improve nutrition
+
+### Additional Features
+1. **Meal Planning** - Plan meals using your current inventory
+2. **Recipe Management** - Store and organize favorite recipes
+3. **Resource Sharing** - Browse and share food-related tips with the community
+4. **Activity Logs** - Complete history of all inventory changes and meals logged
 
 ## 🤝 Contributing
 
