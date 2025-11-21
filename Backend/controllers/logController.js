@@ -14,6 +14,7 @@ export const getLogsByUserId = async (req, res) => {
 export const createLogEntry = async (req, res) => {
     try {
         const userId = req.user.id; //! need to change from auth middleware later
+        
         const { meal_type, calory, waste, cost, log_date , food_items } = req.body;
         
         const newLog = await LogService.createLogEntry(userId, { meal_type, calory, waste, cost, log_date, food_items });

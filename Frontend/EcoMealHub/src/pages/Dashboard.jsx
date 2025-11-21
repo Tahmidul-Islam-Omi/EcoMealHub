@@ -52,6 +52,8 @@ const Dashboard = () => {
   });
   const [categoryData, setCategoryData] = useState([]);
   const [inventoryAlerts, setInventoryAlerts] = useState([]);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
 
   useEffect(() => {
     fetchUserData();
@@ -67,9 +69,18 @@ const Dashboard = () => {
       if (userId) {
         const profileData = await UserAPI.getProfileById(userId);
         setUserName(profileData.full_name || 'User');
+
+        // Fetch AI analysis
+        setAnalysisLoading(true);
+        const resp = await UserAPI.analyzeAiPattern();
+        if (resp && resp.length > 0 && resp[0].analysis?.success) {
+          setAiAnalysis(resp[0].analysis.data);
+        }
+        setAnalysisLoading(false);
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
+      setAnalysisLoading(false);
     }
   };
 
@@ -522,6 +533,190 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+
+        {/* AI Consumption Pattern Analysis */}
+        {aiAnalysis && (
+          <div className="mt-8 bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-500/30 rounded-xl p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-indigo-500/20 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-indigo-400" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-200">AI Consumption Pattern Analysis</h2>
+                <p className="text-slate-400 text-sm">Advanced insights from your eating habits</p>
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div className="mb-8 p-5 bg-slate-800/60 border border-slate-700 rounded-lg">
+              <h3 className="text-lg font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                <Lightbulb className="w-5 h-5 text-yellow-400" />
+                Summary
+              </h3>
+              <p className="text-slate-300 leading-relaxed">{aiAnalysis.summary}</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              {/* Consumption Trends */}
+              <div className="bg-slate-800/60 border border-slate-700 rounded-lg p-5">
+                <h3 className="text-lg font-semibold text-slate-200 mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-blue-400" />
+                  Consumption Trends
+                </h3>
+
+                {/* Over-consumed */}
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-red-400 mb-2">Over-Consumed</h4>
+                  {aiAnalysis.trends.over_consumed && aiAnalysis.trends.over_consumed.length > 0 ? (
+                    <div className="space-y-2">
+                      {aiAnalysis.trends.over_consumed.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-2 p-2 bg-red-500/10 border border-red-500/20 rounded">
+                          <AlertTriangle className="w-4 h-4 text-red-400" />
+                          <span className="text-slate-300 text-sm">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-slate-400 text-sm italic">No over-consumption detected</p>
+                  )}
+                </div>
+
+                {/* Under-consumed */}
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-yellow-400 mb-2">Under-Consumed</h4>
+                  {aiAnalysis.trends.under_consumed && aiAnalysis.trends.under_consumed.length > 0 ? (
+                    <div className="space-y-2">
+                      {aiAnalysis.trends.under_consumed.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-2 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded">
+                          <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                          <span className="text-slate-300 text-sm">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-slate-400 text-sm italic">All food groups well-balanced</p>
+                  )}
+                </div>
+
+                {/* Waste Risk */}
+                <div>
+                  <h4 className="text-sm font-medium text-orange-400 mb-2">Waste Risk Prediction (3-7 days)</h4>
+                  {aiAnalysis.trends.waste_risk && aiAnalysis.trends.waste_risk.length > 0 ? (
+                    <div className="space-y-3">
+                      {aiAnalysis.trends.waste_risk.map((risk, idx) => (
+                        <div key={idx} className="p-3 bg-orange-500/10 border border-orange-500/20 rounded">
+                          <div className="flex items-start justify-between mb-1">
+                            <span className="text-slate-200 font-medium text-sm">{risk.item}</span>
+                            {risk.days_until_waste && (
+                              <span className="text-xs px-2 py-1 bg-orange-500/20 text-orange-300 rounded-full">
+                                {risk.days_until_waste} days
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-slate-400 text-xs">{risk.reason}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-slate-400 text-sm italic">No waste predicted</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Nutritional Flags */}
+              <div className="bg-slate-800/60 border border-slate-700 rounded-lg p-5">
+                <h3 className="text-lg font-semibold text-slate-200 mb-4 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-green-400" />
+                  Nutritional Flags
+                </h3>
+                
+                {aiAnalysis.nutritional_flags && aiAnalysis.nutritional_flags.length > 0 ? (
+                  <div className="space-y-3">
+                    {aiAnalysis.nutritional_flags.map((flag, idx) => (
+                      <div 
+                        key={idx} 
+                        className={`p-4 border rounded-lg ${
+                          flag.severity === 'High' 
+                            ? 'bg-red-500/10 border-red-500/30' 
+                            : flag.severity === 'Medium'
+                            ? 'bg-yellow-500/10 border-yellow-500/30'
+                            : 'bg-blue-500/10 border-blue-500/30'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="text-slate-200 font-semibold text-sm">{flag.issue}</h4>
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            flag.severity === 'High' 
+                              ? 'bg-red-500/20 text-red-300' 
+                              : flag.severity === 'Medium'
+                              ? 'bg-yellow-500/20 text-yellow-300'
+                              : 'bg-blue-500/20 text-blue-300'
+                          }`}>
+                            {flag.severity}
+                          </span>
+                        </div>
+                        <p className="text-slate-300 text-xs leading-relaxed">{flag.recommendation}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-slate-400 text-sm italic">No nutritional concerns detected</p>
+                )}
+              </div>
+            </div>
+
+            {/* Nutrient Gap Prediction */}
+            <div className="bg-slate-800/60 border border-slate-700 rounded-lg p-5">
+              <h3 className="text-lg font-semibold text-slate-200 mb-4 flex items-center gap-2">
+                <Target className="w-5 h-5 text-purple-400" />
+                Nutrient Gap Prediction & Recommendations
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Nutrient Deficiencies */}
+                <div>
+                  <h4 className="text-sm font-medium text-purple-400 mb-3">Potential Nutrient Deficiencies</h4>
+                  {aiAnalysis.gap_prediction.nutrient_deficiencies && aiAnalysis.gap_prediction.nutrient_deficiencies.length > 0 ? (
+                    <div className="space-y-2">
+                      {aiAnalysis.gap_prediction.nutrient_deficiencies.map((nutrient, idx) => (
+                        <div key={idx} className="flex items-center gap-2 p-2 bg-purple-500/10 border border-purple-500/20 rounded">
+                          <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                          <span className="text-slate-300 text-sm">{nutrient}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-slate-400 text-sm italic">No deficiencies detected</p>
+                  )}
+                </div>
+
+                {/* Suggested Foods */}
+                <div>
+                  <h4 className="text-sm font-medium text-green-400 mb-3">Suggested Foods to Fill Gaps</h4>
+                  {aiAnalysis.gap_prediction.suggested_foods && aiAnalysis.gap_prediction.suggested_foods.length > 0 ? (
+                    <div className="space-y-2">
+                      {aiAnalysis.gap_prediction.suggested_foods.map((food, idx) => (
+                        <div key={idx} className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/20 rounded">
+                          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                          <span className="text-slate-300 text-sm">{food}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-slate-400 text-sm italic">No specific suggestions</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {analysisLoading && (
+          <div className="mt-8 bg-slate-800/60 border border-slate-700 rounded-xl p-12 text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mb-4"></div>
+            <p className="text-slate-400">Analyzing your consumption patterns...</p>
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="mt-8 bg-slate-800/60 border border-slate-700 rounded-xl p-6">

@@ -204,6 +204,18 @@ class User {
 
         return user || null;
     }
+
+    static async getAnalysisById(id){
+        const user = await db`
+            SELECT 
+                analysis
+            FROM users
+            WHERE id = ${id}
+        `;
+        console.log(user);
+        
+        return user || null;
+    }
 }
 
 export default User;

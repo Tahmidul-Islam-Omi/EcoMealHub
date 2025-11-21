@@ -79,7 +79,9 @@ const LogAPI = {
 
 const UserAPI ={
   getProfileById : (userId) => api.get(`/user/${userId}`),
-  updateProfileById : (userId, updateData) => api.put(`/user/${userId}`, updateData) 
+  updateProfileById : (userId, updateData) => api.put(`/user/${userId}`, updateData) ,
+
+  analyzeAiPattern : ()=> api.get('/user/analyze')
 }
 
 

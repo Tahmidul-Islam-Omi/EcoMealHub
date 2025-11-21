@@ -170,3 +170,149 @@ export const listAvailableModels = async () => {
     return [];
   }
 };
+
+
+/**
+ * @param {string} consumptions_log - Text log of food consumptions
+ * @returns {Promise<Object>} - Structured JSON object with food items
+ */
+export const analyzePatternFromText = async (consumptions_log) => {
+  try {
+    // Initialize with available free tier model
+    const model = genAI.getGenerativeModel({ 
+      model: "models/gemini-2.5-flash",
+      generationConfig: {
+        temperature: 0.3,
+        topK: 1,
+        topP: 1,
+        maxOutputTokens: 3072,
+      }
+    });
+
+    // find weekly trends in the consumption log, detect over consumption or under consumption of certain food items,
+    //predict items likely to be wasted in 3-7 days using user pattern. flag any imbalance patterns(e.g. low vegies)
+    
+    const prompt = `
+You are an expert food consumption analyst and nutrition advisor. Analyze the following user's food consumption log and provide detailed insights.
+
+CONSUMPTION LOG:
+${consumptions_log}
+
+Your task is to:
+1. Extract all food items with their quantities, units, costs, and expiration dates
+2. Identify weekly consumption trends and patterns
+3. Detect over-consumption or under-consumption of specific food categories
+4. Predict items likely to be wasted in the next 3-7 days based on user patterns
+5. Flag any nutritional imbalance patterns (e.g., low vegetables, high processed foods, etc.)
+6. Predict likely nutrient deficiencies
+7. Suggests food/meals to fill the gaps.
+
+Return your analysis in the following JSON format:
+{
+  
+  "trends": {
+    "over_consumed": ["list of food items consumed excessively"],
+    "under_consumed": ["list of food categories consumed insufficiently"],
+    "waste_risk": [
+      {
+        "item": "string",
+        "reason": "string (why it's at risk of being wasted)",
+        "days_until_waste": number
+      }
+    ]
+  },
+  "nutritional_flags": [
+    {
+      "issue": "string (e.g., 'Low vegetable intake')",
+      "severity": "string (low, medium, high)",
+      "recommendation": "string"
+    }
+  ],
+  "gap_prediction" :
+  {
+    "nutrient_deficiencies" : ["Iron", "vitamin D", "calcium"],
+    "suggested_foods" : ["papaya", "guava" ,...]
+  },
+
+  "summary": "string (brief overview of consumption patterns)"
+}
+
+Rules:
+- If a value is unknown or not mentioned, use null
+- Ensure all dates are in YYYY-MM-DD format
+- Be precise with quantities and units
+- Provide actionable recommendations
+- Consider typical shelf life and expiration patterns for predictions
+
+Return ONLY valid JSON, no additional text or markdown.
+    `;
+
+    // Generate response from Gemini with retry logic for rate limiting
+    let result;
+    let retryCount = 0;
+    const maxRetries = 3;
+    console.log("under the hood");
+    
+    
+    while (retryCount < maxRetries) {
+      try {
+        result = await model.generateContent(prompt);
+        break; // Success, exit retry loop
+      } catch (error) {
+        if (error.message.includes('429') && retryCount < maxRetries - 1) {
+          // Rate limit hit, wait and retry
+          const waitTime = Math.pow(2, retryCount) * 1000; // Exponential backoff
+          console.log(`Rate limit hit, waiting ${waitTime}ms before retry ${retryCount + 1}/${maxRetries}`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          retryCount++;
+        } else {
+          throw error; // Re-throw if not rate limit or max retries reached
+        }
+      }
+    }
+    
+    const response = result.response;
+    const generatedText = response.text();
+
+    console.log(generatedText);
+    
+
+    // Parse the JSON response
+    let parsedData;
+    try {
+      // Clean the response text (remove any markdown formatting)
+      const cleanedText = generatedText.replace(/```json\n?|\n?```/g, '').trim();
+
+      console.log(cleanedText);
+      
+      parsedData = JSON.parse(cleanedText);
+      console.log("parsed data :". parsedData);
+      
+    } catch (parseError) {
+      console.error('Error parsing Gemini response:', parseError);
+      throw new Error('Failed to parse AI response as valid JSON');
+    }
+
+    // Validate the response structure
+    if (!parsedData || !parsedData.trends || !parsedData.nutritional_flags) {
+      throw new Error('Invalid response structure from AI model');
+    }
+
+    
+    return {
+      success: true,
+      data: parsedData,
+      message: `Successfully analyzed consumption patterns`
+    };
+
+  } catch (error) {
+    console.error('Error in analyzeFoodItemsFromText:', error);
+    
+    return {
+      success: false,
+      data: [],
+      message: error.message || 'Failed to analyze food items from text',
+      error: error.message
+    };
+  }
+};

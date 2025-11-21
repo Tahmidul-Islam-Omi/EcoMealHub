@@ -50,11 +50,12 @@ export const createUserInventoryItem = async (req, res) => {
         const userId = req.user.id; //! need to change from auth middleware later
         const { item_id, quantity, unit, custom_cost, expiration_day } = req.body;
         var cost = custom_cost;
+        var expiration_time= expiration_day;
         if (!custom_cost) {
             cost = null;
         }
         if(!expiration_day){
-            expiration_day = null;
+            expiration_time = null;
         }
         const newItem = await inventoryService.createUserInventoryItem(userId, item_id, quantity, unit, cost, expiration_day);
         res.status(201).json(newItem);
