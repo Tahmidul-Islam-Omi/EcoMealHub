@@ -82,5 +82,15 @@ const UserAPI ={
   updateProfileById : (userId, updateData) => api.put(`/user/${userId}`, updateData) 
 }
 
+const SDGAPI = {
+  getSDGScore: () => api.get('/sdg/score'),
+  
+  getWeeklyInsights: () => api.get('/sdg/insights'),
+  
+  getSDGTargets: () => api.get('/sdg/targets'),
+  
+  getSDGHistory: () => api.get('/sdg/history')
+};
 
-export { InventoryAPI, ResourceAPI, LogAPI, UserAPI, API_BASE_URL };
+
+export { InventoryAPI, ResourceAPI, LogAPI, UserAPI, SDGAPI, API_BASE_URL };
