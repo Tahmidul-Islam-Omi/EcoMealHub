@@ -3,3 +3,4 @@ export { default as ValidateRegistration } from './validateRegistration.js';
 export { default as ValidateLogin } from './validateLogin.js';
 export { default as ValidatePasswordReset } from './validatePasswordReset.js';
 export { default as ErrorHandler } from './errorHandler.js';
+export { default as ChatBotMiddleware } from './chatBotMiddleware.js';

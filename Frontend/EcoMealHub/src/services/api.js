@@ -50,7 +50,7 @@ const InventoryAPI = {
 
   getGlobalInventoryItems: () => api.get('/inventory/global'),
 
-  createGlobalInventoryItem: (itemData) => api.post('/inventory/global', itemData)
+  createGlobalInventoryItem: (itemData) => api.post('/inventory/global', itemData),
 };
 
 const ResourceAPI = {
@@ -65,6 +65,9 @@ const ResourceAPI = {
   deleteResource: (resourceId) => api.delete(`/resources/${resourceId}`)
 };
 
+const ChatBotAPI = { 
+  chatbotItem: (memory, messages) => api.post('/chat', { memory, messages }),
+};
 
 
-export { InventoryAPI, ResourceAPI, API_BASE_URL };
+export { InventoryAPI, ResourceAPI, ChatBotAPI, API_BASE_URL };

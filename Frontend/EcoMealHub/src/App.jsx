@@ -17,6 +17,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import GoogleAuthSuccess from './pages/GoogleAuthSuccess';
 import Logs from './pages/Logs';
 import ReceiptUpload from './pages/ReceiptUpload';
+import ChatBot from './pages/ChatBot';
 
 const AppContent = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -49,6 +50,7 @@ const AppContent = () => {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/receipt-upload" element={<ReceiptUpload />} />
             <Route path="/add-resource" element={<AddResourcePage />} />
+            <Route path="/chatbot" element={<ChatBot />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </>
         ) : (

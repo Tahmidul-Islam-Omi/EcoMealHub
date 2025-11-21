@@ -30,6 +30,7 @@ const Navigation = () => {
     { path: '/recipes', label: t('recipes'), icon: ChefHat },
     { path: '/meal-planning', label: t('mealPlanning'), icon: Calendar },
     { path: '/resources', label: t('resources'), icon: BookOpen },
+    { path: '/chatbot', label: t('chatbot'), icon: Leaf },
   ];
 
   const handleLogout = () => {
