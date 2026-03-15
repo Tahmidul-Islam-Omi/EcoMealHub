@@ -34,6 +34,7 @@
 - **Activity Logging** - Comprehensive tracking of all inventory changes and meal consumption
 - **User Profiles** - Customizable profiles with household size, dietary preferences, and goals
 
+
 ### 🤖 AI-Powered Features
 - **OCR Receipt Scanning** - Extract food items from receipt images using Tesseract.js
 - **AI Text Analysis** - Google Gemini AI automatically structures and categorizes extracted food data
@@ -67,6 +68,63 @@
 - **Recipe Management** - Store and organize favorite recipes
 - **Responsive Design** - Mobile-friendly interface with Tailwind CSS
 - **Real-time Updates** - Instant UI updates with React state management
+
+### Snapshots :
+## Home
+<img width="1851" height="940" alt="image" src="https://github.com/user-attachments/assets/0990e5df-cc96-4d53-b31a-09f2c60ca37f" />
+<img width="1851" height="940" alt="image" src="https://github.com/user-attachments/assets/d1500d4f-7d65-43de-a7fc-9d3a2408af89" />
+MultiLingual Support : Support Bengali and French Language besides English
+- Bangla
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/1ec13eb3-9f01-499f-954c-65c7a626daa1" />
+- French
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/16dc5cd5-c976-4e00-956f-d966df63b5a6" />
+
+
+## Authentication
+<img width="1851" height="960" alt="image" src="https://github.com/user-attachments/assets/7ceff24c-beb5-4b8f-b747-cafba0fd7202" />
+<img width="1851" height="960" alt="image" src="https://github.com/user-attachments/assets/25c2f5fc-161b-4bf2-bb15-c1cb33577e58" />
+<img width="1851" height="960" alt="image" src="https://github.com/user-attachments/assets/3dbfa5e1-2372-47eb-8a9a-7ed7c6ee88c2" />
+<img width="1851" height="960" alt="image" src="https://github.com/user-attachments/assets/50df7d77-e9d1-432c-9942-b6c230c6f776" />
+
+## Profile
+<img width="1851" height="960" alt="image" src="https://github.com/user-attachments/assets/245832a0-2ede-450e-8d07-db849c2024ab" />
+
+## Dashboard and AI analysis 
+<img width="1851" height="960" alt="image" src="https://github.com/user-attachments/assets/d841af36-b74c-41cc-85cd-45b349a68d57" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/0e5f16cb-16df-482d-adce-1d9edf8f7536" />
+
+## Log :
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/7bdf5b34-75b7-469d-80fa-55254148661b" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/7c953726-a6e8-4288-bff1-610debcd1162" />
+
+## Inventory :
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/63acffb3-f322-4e48-b87c-348578e69461" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/d7df54c0-dfda-4e81-ba5e-17c6a56d2bc4" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/5fc85d8d-41e1-4a8e-a4f5-9212f3741188" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/7e68b282-e19d-48ac-b6ab-357d93ffd43e" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/3c162647-d8e4-4abb-b644-bf1b20827430" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/d7f3dbe5-7905-4a5d-b019-54dfb3df124b" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/4fe60f92-b974-4a5b-9388-b115fd99ec93" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/cd85741f-601a-4a92-9019-4ff2d59d9fac" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/3658f072-9dcf-403d-be58-aa7c0957850f" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/d762dfb8-b90c-419b-8a51-de89793552d2" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/33c0b789-4248-4c91-be43-cff0c8e40ae2" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/86752e0e-d6ef-49fe-8f97-50a85eb392b3" />
+
+## Meal planning
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/9e971c62-ef6f-4368-a57b-7e3a903ab524" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/a2d13659-0263-432a-b23a-986c3a8a273b" />
+
+## Resources/Articles :
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/d0141448-3632-4e99-8630-671ae784ab21" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/3c6127b6-13a6-4be8-9429-547bde6ba1dc" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/14e2b9c2-c709-43c5-9f8a-3797e9dbf74f" />
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/7d792641-6cdb-4ea6-bcbb-36073247068c" />
+
+## Personalized Chatbot :
+<img width="1851" height="968" alt="image" src="https://github.com/user-attachments/assets/283b9267-625e-4380-a320-640ee6f2ddde" />
+
+
 
 ## 🛠️ Setup Instructions
 
